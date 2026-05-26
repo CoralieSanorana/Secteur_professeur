@@ -1,0 +1,89 @@
+<?php
+  $pageTitle = 'Bulletins';
+  $activePage = 'prof-bulletins';
+  $activeRole = 'professeur';
+  $userName = 'Prof. Rabe';
+  $userRole = 'Professeur';
+  $userInitials = 'RB';
+?>
+
+<?= view('inc/header',['pageTitle' => $pageTitle, 'activePage' => $activePage]) ?>
+
+    <section class="page-section active" id="prof-bulletins">
+      <div class="page-header">
+        <div><h2>Bulletins — Terminale C</h2><p>Salle dont vous êtes titulaire</p></div>
+        <div class="page-header-actions">
+          <select class="form-control" style="width:auto;padding:8px 12px;"><option>Trimestre 2</option></select>
+          <button class="btn btn-primary" onclick="showToast('📋 Bulletins publiés pour Terminale C !')"><i class="fas fa-share"></i> Publier les bulletins</button>
+        </div>
+      </div>
+      <div class="bulletin">
+        <div class="bulletin-head">
+          <div>
+            <h3>BULLETIN DE NOTES</h3>
+            <p>Lycée Privé — Année 2025–2026 · Trimestre 2 · Terminale C</p>
+            <p style="margin-top:8px;font-size:14px;opacity:.8;">Élève : <strong>Rakoto Jean</strong></p>
+          </div>
+          <div class="bulletin-rank">
+            <span>Rang</span>
+            <strong>1er</strong>
+            <span>/ 32</span>
+          </div>
+        </div>
+        <div class="bulletin-body">
+          <div class="bulletin-row header">
+            <div>Matière</div><div>Note /20</div><div>Coeff.</div><div>Appréciation</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Mathématiques</div>
+            <div class="grade-excellent">15.5</div>
+            <div>5</div>
+            <div style="font-size:12px;color:var(--clr-teal);">Très bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Français</div>
+            <div class="grade-good">13.0</div>
+            <div>4</div>
+            <div style="font-size:12px;color:var(--clr-violet);">Bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Sciences Physiques</div>
+            <div class="grade-good">14.5</div>
+            <div>4</div>
+            <div style="font-size:12px;color:var(--clr-violet);">Bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Histoire-Géographie</div>
+            <div class="grade-average">11.0</div>
+            <div>3</div>
+            <div style="font-size:12px;color:var(--clr-amber);">Assez bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>SVT</div>
+            <div class="grade-excellent">16.0</div>
+            <div>3</div>
+            <div style="font-size:12px;color:var(--clr-teal);">Très bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Anglais</div>
+            <div class="grade-average">12.0</div>
+            <div>2</div>
+            <div style="font-size:12px;color:var(--clr-amber);">Assez bien</div>
+          </div>
+        </div>
+        <div class="bulletin-footer">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Moyenne Générale</div>
+            <div class="moy grade-excellent">14.12 / 20</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Appréciation du Directeur</div>
+            <div style="font-size:13px;font-style:italic;margin-top:4px;">"Excellent élève, félicitations !"</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<?= view('inc/modals') ?>
+
+<?= view('inc/footer') ?>

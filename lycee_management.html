@@ -1,0 +1,2976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LycéePro — Système de Gestion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    /* =========================================
+       CSS CUSTOM PROPERTIES (SCSS-like vars)
+    ========================================= */
+    :root {
+      /* Brand palette — warm amber × deep navy */
+      --clr-bg:          #F7F4EF;
+      --clr-surface:     #FFFFFF;
+      --clr-surface2:    #F0EBE3;
+      --clr-border:      #E2D9CD;
+
+      --clr-navy:        #1A2744;
+      --clr-navy-mid:    #253564;
+      --clr-amber:       #E8A020;
+      --clr-amber-light: #F5C76A;
+      --clr-amber-pale:  #FDF3DC;
+      --clr-teal:        #1B8A7A;
+      --clr-teal-light:  #E3F4F1;
+      --clr-rose:        #D4455C;
+      --clr-rose-light:  #FCEAED;
+      --clr-violet:      #6B52C8;
+      --clr-violet-light:#EDE9FB;
+
+      --clr-text-primary:   #1A2744;
+      --clr-text-secondary: #5A6480;
+      --clr-text-muted:     #9AA0B4;
+
+      /* Typography */
+      --font-display: 'Playfair Display', serif;
+      --font-body:    'DM Sans', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --sp-xs:  4px;
+      --sp-sm:  8px;
+      --sp-md:  16px;
+      --sp-lg:  24px;
+      --sp-xl:  32px;
+      --sp-2xl: 48px;
+      --sp-3xl: 64px;
+
+      /* Radius */
+      --r-sm:   6px;
+      --r-md:   12px;
+      --r-lg:   20px;
+      --r-xl:   28px;
+      --r-full: 999px;
+
+      /* Shadows */
+      --shadow-sm:  0 1px 3px rgba(26,39,68,.08), 0 1px 2px rgba(26,39,68,.05);
+      --shadow-md:  0 4px 16px rgba(26,39,68,.10), 0 2px 6px rgba(26,39,68,.06);
+      --shadow-lg:  0 12px 40px rgba(26,39,68,.14), 0 4px 12px rgba(26,39,68,.08);
+      --shadow-amber: 0 6px 24px rgba(232,160,32,.30);
+
+      /* Transitions */
+      --ease: cubic-bezier(.4,0,.2,1);
+      --dur:  220ms;
+    }
+
+    /* =========================================
+       RESET & BASE
+    ========================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--clr-bg);
+      color: var(--clr-text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    ul, ol { list-style: none; }
+
+    /* =========================================
+       LAYOUT SHELL
+    ========================================= */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
+      min-height: 100vh;
+    }
+
+    /* =========================================
+       SIDEBAR
+    ========================================= */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--clr-navy);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    /* Scrollbar sidebar */
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+
+    .sidebar-brand {
+      padding: var(--sp-lg) var(--sp-xl);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+    }
+    .sidebar-brand-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--clr-amber), var(--clr-amber-light));
+      border-radius: var(--r-md);
+      display: grid; place-items: center;
+      font-size: 20px;
+      box-shadow: var(--shadow-amber);
+      flex-shrink: 0;
+    }
+    .sidebar-brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: -.3px;
+      line-height: 1.2;
+    }
+    .sidebar-brand-text span {
+      font-size: 11px;
+      color: rgba(255,255,255,.45);
+      font-weight: 300;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    /* Role switcher */
+    .role-switcher {
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .role-switcher label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.4);
+      margin-bottom: var(--sp-sm);
+    }
+    .role-switcher select {
+      width: 100%;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: #fff;
+      border-radius: var(--r-sm);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      appearance: none;
+      cursor: pointer;
+      transition: background var(--dur) var(--ease);
+    }
+    .role-switcher select:focus { outline: none; background: rgba(255,255,255,.13); }
+
+    /* Nav sections */
+    .nav-section {
+      padding: var(--sp-md) var(--sp-lg);
+      flex: 1;
+    }
+    .nav-section-title {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      padding: var(--sp-md) 0 var(--sp-sm);
+      font-weight: 500;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px var(--sp-md);
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255,255,255,.65);
+      transition: all var(--dur) var(--ease);
+      margin-bottom: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,.07);
+      color: #fff;
+    }
+    .nav-item.active {
+      background: rgba(232,160,32,.18);
+      color: var(--clr-amber-light);
+      font-weight: 500;
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 20px;
+      background: var(--clr-amber);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--clr-rose);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--r-full);
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: var(--sp-md) var(--sp-lg);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      padding: var(--sp-sm);
+      border-radius: var(--r-md);
+      transition: background var(--dur) var(--ease);
+      cursor: pointer;
+    }
+    .sidebar-user:hover { background: rgba(255,255,255,.07); }
+    .sidebar-avatar {
+      width: 36px; height: 36px;
+      border-radius: var(--r-full);
+      background: linear-gradient(135deg, var(--clr-amber), var(--clr-teal));
+      display: grid; place-items: center;
+      font-size: 14px; font-weight: 600;
+      color: #fff; flex-shrink: 0;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-info strong {
+      display: block;
+      font-size: 13px; font-weight: 500;
+      color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sidebar-user-info small {
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+    }
+
+    /* =========================================
+       TOPBAR
+    ========================================= */
+    .topbar {
+      grid-area: topbar;
+      background: var(--clr-surface);
+      border-bottom: 1px solid var(--clr-border);
+      padding: 0 var(--sp-xl);
+      height: 68px;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-lg);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      box-shadow: var(--shadow-sm);
+    }
+    .topbar-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--clr-navy);
+      flex: 1;
+    }
+    .topbar-search {
+      position: relative;
+      width: 280px;
+    }
+    .topbar-search input {
+      width: 100%;
+      background: var(--clr-bg);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-full);
+      padding: 9px 16px 9px 40px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      color: var(--clr-text-primary);
+      transition: all var(--dur) var(--ease);
+    }
+    .topbar-search input:focus {
+      outline: none;
+      border-color: var(--clr-amber);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(232,160,32,.12);
+    }
+    .topbar-search i {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--clr-text-muted);
+      font-size: 13px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+    }
+    .topbar-btn {
+      width: 40px; height: 40px;
+      border-radius: var(--r-md);
+      display: grid; place-items: center;
+      color: var(--clr-text-secondary);
+      font-size: 16px;
+      transition: all var(--dur) var(--ease);
+      position: relative;
+    }
+    .topbar-btn:hover { background: var(--clr-bg); color: var(--clr-navy); }
+    .notif-dot {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 8px; height: 8px;
+      background: var(--clr-rose);
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      padding: 6px 12px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--clr-border);
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+      margin-left: var(--sp-sm);
+    }
+    .topbar-user:hover { border-color: var(--clr-amber); background: var(--clr-amber-pale); }
+    .topbar-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--clr-navy), var(--clr-violet));
+      display: grid; place-items: center;
+      color: #fff; font-size: 12px; font-weight: 600;
+    }
+    .topbar-user-meta strong { font-size: 13px; font-weight: 500; }
+    .topbar-user-meta small { display: block; font-size: 11px; color: var(--clr-text-muted); }
+
+    /* =========================================
+       MAIN CONTENT
+    ========================================= */
+    .main-content {
+      grid-area: main;
+      padding: var(--sp-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-xl);
+      overflow-x: hidden;
+    }
+
+    /* Page section visibility */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* =========================================
+       SHARED COMPONENTS
+    ========================================= */
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--sp-md);
+      margin-bottom: var(--sp-xl);
+    }
+    .page-header h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--clr-navy);
+      line-height: 1.2;
+    }
+    .page-header p {
+      font-size: 14px;
+      color: var(--clr-text-secondary);
+      margin-top: 4px;
+    }
+    .page-header-actions { display: flex; gap: var(--sp-sm); align-items: center; flex-wrap: wrap; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--r-full);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      transition: all var(--dur) var(--ease);
+      cursor: pointer;
+      border: none;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--clr-amber);
+      color: var(--clr-navy);
+      box-shadow: var(--shadow-amber);
+    }
+    .btn-primary:hover {
+      background: var(--clr-amber-light);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(232,160,32,.4);
+    }
+    .btn-secondary {
+      background: var(--clr-surface);
+      color: var(--clr-text-primary);
+      border: 1px solid var(--clr-border);
+    }
+    .btn-secondary:hover {
+      background: var(--clr-bg);
+      border-color: var(--clr-amber);
+    }
+    .btn-navy {
+      background: var(--clr-navy);
+      color: #fff;
+    }
+    .btn-navy:hover { background: var(--clr-navy-mid); transform: translateY(-1px); }
+    .btn-sm { padding: 7px 14px; font-size: 12px; }
+    .btn-icon {
+      width: 36px; height: 36px;
+      padding: 0;
+      display: grid; place-items: center;
+      border-radius: var(--r-md);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--clr-surface);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--clr-border);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: var(--sp-lg) var(--sp-xl);
+      border-bottom: 1px solid var(--clr-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-md);
+      flex-wrap: wrap;
+    }
+    .card-header h3 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      color: var(--clr-navy);
+    }
+    .card-body { padding: var(--sp-xl); }
+    .card-footer {
+      padding: var(--sp-md) var(--sp-xl);
+      border-top: 1px solid var(--clr-border);
+      background: var(--clr-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--clr-text-secondary);
+    }
+
+    /* Stat cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--sp-lg);
+    }
+    .stat-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-xl);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.amber::after { background: linear-gradient(90deg, var(--clr-amber), var(--clr-amber-light)); }
+    .stat-card.teal::after { background: linear-gradient(90deg, var(--clr-teal), #4ECDC4); }
+    .stat-card.rose::after { background: linear-gradient(90deg, var(--clr-rose), #FF8FA3); }
+    .stat-card.violet::after { background: linear-gradient(90deg, var(--clr-violet), #A78BFA); }
+    .stat-card.navy::after { background: linear-gradient(90deg, var(--clr-navy), var(--clr-navy-mid)); }
+
+    .stat-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--r-md);
+      display: grid; place-items: center;
+      font-size: 20px;
+      margin-bottom: var(--sp-lg);
+    }
+    .stat-icon.amber { background: var(--clr-amber-pale); color: var(--clr-amber); }
+    .stat-icon.teal  { background: var(--clr-teal-light); color: var(--clr-teal); }
+    .stat-icon.rose  { background: var(--clr-rose-light); color: var(--clr-rose); }
+    .stat-icon.violet{ background: var(--clr-violet-light); color: var(--clr-violet); }
+    .stat-icon.navy  { background: rgba(26,39,68,.08); color: var(--clr-navy); }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--clr-navy);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--clr-text-secondary);
+      font-weight: 400;
+    }
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: var(--sp-sm);
+    }
+    .stat-trend.up { color: var(--clr-teal); }
+    .stat-trend.down { color: var(--clr-rose); }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-xl); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-xl); }
+    .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-lg); }
+
+    /* Tables */
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th {
+      padding: 12px var(--sp-lg);
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--clr-text-muted);
+      border-bottom: 1px solid var(--clr-border);
+      background: var(--clr-bg);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 14px var(--sp-lg);
+      border-bottom: 1px solid var(--clr-border);
+      color: var(--clr-text-primary);
+      vertical-align: middle;
+    }
+    tbody tr:hover td { background: var(--clr-bg); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--r-full);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-green  { background: var(--clr-teal-light); color: var(--clr-teal); }
+    .badge-red    { background: var(--clr-rose-light); color: var(--clr-rose); }
+    .badge-amber  { background: var(--clr-amber-pale); color: #9A6500; }
+    .badge-violet { background: var(--clr-violet-light); color: var(--clr-violet); }
+    .badge-navy   { background: rgba(26,39,68,.08); color: var(--clr-navy); }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Forms */
+    .form-group { margin-bottom: var(--sp-lg); }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .4px;
+      color: var(--clr-text-secondary);
+      text-transform: uppercase;
+      margin-bottom: var(--sp-sm);
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px var(--sp-md);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-family: var(--font-body);
+      color: var(--clr-text-primary);
+      background: var(--clr-surface);
+      transition: all var(--dur) var(--ease);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--clr-amber);
+      box-shadow: 0 0 0 3px rgba(232,160,32,.12);
+    }
+    select.form-control { appearance: none; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-lg); }
+
+    /* Progress bars */
+    .progress-bar {
+      height: 8px;
+      background: var(--clr-surface2);
+      border-radius: var(--r-full);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      transition: width .6s var(--ease);
+    }
+    .progress-fill.amber  { background: linear-gradient(90deg, var(--clr-amber), var(--clr-amber-light)); }
+    .progress-fill.teal   { background: linear-gradient(90deg, var(--clr-teal), #4ECDC4); }
+    .progress-fill.rose   { background: linear-gradient(90deg, var(--clr-rose), #FF8FA3); }
+    .progress-fill.violet { background: linear-gradient(90deg, var(--clr-violet), #A78BFA); }
+
+    /* Avatar */
+    .avatar {
+      border-radius: var(--r-full);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .avatar-placeholder {
+      border-radius: var(--r-full);
+      display: grid; place-items: center;
+      font-weight: 600;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Pill filters */
+    .filter-pills {
+      display: flex;
+      gap: var(--sp-sm);
+      flex-wrap: wrap;
+    }
+    .pill {
+      padding: 7px 16px;
+      border-radius: var(--r-full);
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--clr-border);
+      background: var(--clr-surface);
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+    }
+    .pill:hover { border-color: var(--clr-amber); color: var(--clr-navy); }
+    .pill.active {
+      background: var(--clr-navy);
+      border-color: var(--clr-navy);
+      color: #fff;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid var(--clr-border);
+      margin-bottom: var(--sp-xl);
+    }
+    .tab {
+      padding: 10px var(--sp-lg);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--clr-text-secondary);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+    }
+    .tab:hover { color: var(--clr-navy); }
+    .tab.active { color: var(--clr-amber); border-color: var(--clr-amber); }
+
+    /* Notification bell */
+    .notif-panel {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Charts placeholder */
+    .chart-placeholder {
+      height: 200px;
+      background: linear-gradient(135deg, var(--clr-bg), var(--clr-surface2));
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding: var(--sp-md);
+      overflow: hidden;
+    }
+    .chart-bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, var(--clr-amber), var(--clr-amber-light));
+      opacity: .8;
+      min-height: 10px;
+      transition: opacity var(--dur) var(--ease);
+    }
+    .chart-bar:hover { opacity: 1; }
+    .chart-bar.alt { background: linear-gradient(180deg, var(--clr-teal), #4ECDC4); }
+    .chart-bar.small { background: linear-gradient(180deg, var(--clr-violet), #A78BFA); }
+
+    /* Donut chart placeholder */
+    .donut-chart {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--clr-teal) 0% 68%,
+        var(--clr-rose) 68% 85%,
+        var(--clr-amber) 85% 100%
+      );
+      position: relative;
+      flex-shrink: 0;
+    }
+    .donut-chart::after {
+      content: '68%';
+      position: absolute;
+      inset: 20px;
+      background: white;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--clr-navy);
+    }
+
+    /* Timeline */
+    .timeline { display: flex; flex-direction: column; gap: var(--sp-md); }
+    .timeline-item {
+      display: flex;
+      gap: var(--sp-md);
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 19px; top: 36px;
+      width: 2px; bottom: -16px;
+      background: var(--clr-border);
+    }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+    .timeline-content { flex: 1; padding-bottom: var(--sp-md); }
+    .timeline-content strong { display: block; font-size: 14px; font-weight: 500; }
+    .timeline-content small { font-size: 12px; color: var(--clr-text-muted); }
+
+    /* Schedule grid */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 80px repeat(5, 1fr);
+      gap: 2px;
+      background: var(--clr-border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .schedule-cell {
+      background: var(--clr-surface);
+      padding: 10px var(--sp-sm);
+      min-height: 60px;
+    }
+    .schedule-header {
+      background: var(--clr-navy);
+      color: rgba(255,255,255,.8);
+      font-weight: 600;
+      letter-spacing: .5px;
+      font-size: 11px;
+      padding: var(--sp-sm);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .schedule-time {
+      background: var(--clr-bg);
+      color: var(--clr-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .schedule-class {
+      border-radius: var(--r-sm);
+      padding: 6px 8px;
+      font-size: 11px;
+      line-height: 1.3;
+      height: 100%;
+    }
+    .schedule-class.math { background: var(--clr-amber-pale); border-left: 3px solid var(--clr-amber); }
+    .schedule-class.french { background: var(--clr-teal-light); border-left: 3px solid var(--clr-teal); }
+    .schedule-class.science { background: var(--clr-violet-light); border-left: 3px solid var(--clr-violet); }
+    .schedule-class.history { background: var(--clr-rose-light); border-left: 3px solid var(--clr-rose); }
+    .schedule-class span { display: block; font-weight: 600; }
+    .schedule-class small { color: var(--clr-text-secondary); }
+
+    /* News/Actualité cards */
+    .news-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+    .news-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .news-card-image {
+      height: 160px;
+      background: linear-gradient(135deg, var(--clr-navy), var(--clr-violet));
+      display: grid; place-items: center;
+      font-size: 48px;
+    }
+    .news-card-body { padding: var(--sp-lg); }
+    .news-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      font-size: 12px;
+      color: var(--clr-text-muted);
+      margin-bottom: var(--sp-sm);
+    }
+    .news-card-body h4 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      color: var(--clr-navy);
+      margin-bottom: var(--sp-sm);
+      line-height: 1.3;
+    }
+    .news-card-body p {
+      font-size: 13px;
+      color: var(--clr-text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Prof card */
+    .prof-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-xl);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--dur) var(--ease);
+    }
+    .prof-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .prof-card-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      margin: 0 auto var(--sp-md);
+      display: grid; place-items: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      border: 3px solid var(--clr-amber);
+    }
+    .prof-card h4 { font-family: var(--font-display); font-size: 16px; margin-bottom: 4px; }
+    .prof-card .matiere {
+      font-size: 12px;
+      color: var(--clr-amber);
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: var(--sp-sm);
+    }
+    .prof-card .salaire {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--clr-navy);
+      margin-top: var(--sp-md);
+      padding-top: var(--sp-md);
+      border-top: 1px dashed var(--clr-border);
+    }
+    .prof-card .salaire span { font-size: 12px; color: var(--clr-text-muted); font-family: var(--font-body); }
+
+    /* Student list item */
+    .student-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid var(--clr-border);
+      transition: background var(--dur) var(--ease);
+      cursor: pointer;
+    }
+    .student-row:hover { background: var(--clr-bg); }
+    .student-row:last-child { border-bottom: none; }
+    .student-info { flex: 1; min-width: 0; }
+    .student-info strong { display: block; font-size: 14px; font-weight: 500; }
+    .student-info small { font-size: 12px; color: var(--clr-text-muted); }
+
+    /* Grade table */
+    .grade-excellent { color: var(--clr-teal); font-weight: 600; }
+    .grade-good      { color: var(--clr-violet); font-weight: 600; }
+    .grade-average   { color: var(--clr-amber); font-weight: 600; }
+    .grade-fail      { color: var(--clr-rose); font-weight: 600; }
+
+    /* Bulletin */
+    .bulletin {
+      border: 2px solid var(--clr-navy);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      font-size: 13px;
+    }
+    .bulletin-head {
+      background: var(--clr-navy);
+      color: #fff;
+      padding: var(--sp-xl);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--sp-lg);
+      align-items: center;
+    }
+    .bulletin-head h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+    }
+    .bulletin-head p { font-size: 12px; opacity: .6; margin-top: 4px; }
+    .bulletin-rank {
+      text-align: center;
+      background: var(--clr-amber);
+      color: var(--clr-navy);
+      border-radius: var(--r-md);
+      padding: var(--sp-md) var(--sp-lg);
+    }
+    .bulletin-rank span { font-size: 10px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+    .bulletin-rank strong { font-size: 28px; font-family: var(--font-display); display: block; }
+    .bulletin-body { padding: var(--sp-lg); }
+    .bulletin-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 120px;
+      gap: var(--sp-md);
+      padding: 10px var(--sp-md);
+      border-bottom: 1px solid var(--clr-border);
+      align-items: center;
+    }
+    .bulletin-row:last-child { border-bottom: none; }
+    .bulletin-row.header {
+      background: var(--clr-bg);
+      border-radius: var(--r-sm);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--clr-text-muted);
+      font-weight: 600;
+    }
+    .bulletin-footer {
+      background: var(--clr-bg);
+      padding: var(--sp-lg);
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--clr-border);
+    }
+    .bulletin-footer .moy {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      color: var(--clr-navy);
+      font-weight: 500;
+    }
+
+    /* Poll / Sondage */
+    .poll-option {
+      padding: var(--sp-sm) var(--sp-md);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      transition: all var(--dur) var(--ease);
+      margin-bottom: var(--sp-sm);
+    }
+    .poll-option:hover { border-color: var(--clr-amber); background: var(--clr-amber-pale); }
+    .poll-radio {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--clr-border);
+      flex-shrink: 0;
+      transition: all var(--dur) var(--ease);
+    }
+    .poll-option.selected .poll-radio {
+      border-color: var(--clr-amber);
+      background: var(--clr-amber);
+      box-shadow: 0 0 0 3px rgba(232,160,32,.2);
+    }
+    .poll-option.selected { border-color: var(--clr-amber); background: var(--clr-amber-pale); }
+
+    /* Notification dropdown */
+    .notif-dropdown {
+      position: absolute;
+      right: 0; top: calc(100% + 12px);
+      width: 340px;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      overflow: hidden;
+      display: none;
+    }
+    .notif-dropdown.open { display: block; }
+    .notif-dropdown-head {
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid var(--clr-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .notif-dropdown-head h4 { font-size: 15px; font-weight: 600; }
+    .notif-item {
+      display: flex;
+      gap: var(--sp-md);
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid var(--clr-border);
+      transition: background var(--dur) var(--ease);
+      cursor: pointer;
+    }
+    .notif-item:hover { background: var(--clr-bg); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--r-md);
+      display: grid; place-items: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .notif-item-text strong { display: block; font-size: 13px; font-weight: 500; }
+    .notif-item-text small { font-size: 11px; color: var(--clr-text-muted); }
+    .notif-item.unread { background: rgba(232,160,32,.04); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(26,39,68,.5);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      place-items: center;
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal {
+      background: var(--clr-surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 520px;
+      margin: var(--sp-lg);
+      overflow: hidden;
+      animation: slideUp .3s var(--ease);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      padding: var(--sp-xl);
+      border-bottom: 1px solid var(--clr-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-family: var(--font-display); font-size: 20px; }
+    .modal-body { padding: var(--sp-xl); }
+    .modal-footer {
+      padding: var(--sp-lg) var(--sp-xl);
+      border-top: 1px solid var(--clr-border);
+      display: flex;
+      gap: var(--sp-sm);
+      justify-content: flex-end;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: var(--sp-xl);
+      right: var(--sp-xl);
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-sm);
+    }
+    .toast {
+      background: var(--clr-navy);
+      color: #fff;
+      padding: var(--sp-md) var(--sp-lg);
+      border-radius: var(--r-lg);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      box-shadow: var(--shadow-lg);
+      animation: toastIn .3s var(--ease);
+      border-left: 4px solid var(--clr-amber);
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Presence tracker */
+    .presence-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .presence-dot.present { background: var(--clr-teal); }
+    .presence-dot.absent  { background: var(--clr-rose); }
+    .presence-dot.late    { background: var(--clr-amber); }
+
+    /* Payement bilan */
+    .bilan-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      padding: var(--sp-md) 0;
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .bilan-item:last-child { border-bottom: none; }
+    .bilan-item-label { flex: 1; font-size: 14px; }
+    .bilan-item-bar { flex: 2; }
+    .bilan-item-val { font-family: var(--font-mono); font-size: 14px; font-weight: 500; color: var(--clr-navy); min-width: 50px; text-align: right; }
+
+    /* Devoir card */
+    .devoir-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-lg);
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--clr-amber);
+    }
+    .devoir-card h4 { font-size: 15px; font-weight: 600; margin-bottom: var(--sp-sm); }
+    .devoir-card .due { font-size: 12px; color: var(--clr-rose); font-weight: 500; }
+    .devoir-card p { font-size: 13px; color: var(--clr-text-secondary); margin-top: var(--sp-sm); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--sp-3xl) var(--sp-xl);
+      color: var(--clr-text-muted);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: var(--sp-lg); opacity: .4; }
+    .empty-state p { font-size: 14px; }
+
+    /* =========================================
+       PAGE-SPECIFIC: DIRECTEUR
+    ========================================= */
+    .finance-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-lg);
+    }
+    .finance-block {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-xl);
+    }
+    .finance-block h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--clr-text-muted); margin-bottom: var(--sp-md); }
+    .finance-amount { font-family: var(--font-display); font-size: 36px; color: var(--clr-navy); }
+    .finance-amount.positive { color: var(--clr-teal); }
+    .finance-amount.negative { color: var(--clr-rose); }
+
+    /* =========================================
+       ANIMATIONS
+    ========================================= */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-section.active { animation: fadeIn .25s var(--ease); }
+
+    /* =========================================
+       RESPONSIVE
+    ========================================= */
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+        grid-template-areas: "topbar" "main";
+      }
+      .sidebar { display: none; }
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .finance-summary { grid-template-columns: 1fr; }
+      .topbar-search { width: 180px; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .main-content { padding: var(--sp-md); }
+      .topbar { padding: 0 var(--sp-md); }
+      .topbar-user-meta { display: none; }
+    }
+
+    /* =========================================
+       DECORATIVE BG PATTERN
+    ========================================= */
+    .main-content {
+      background-image: radial-gradient(circle at 80% 20%, rgba(232,160,32,.04) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(27,138,122,.03) 0%, transparent 50%);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     APP SHELL
+============================================================ -->
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">🎓</div>
+      <div class="sidebar-brand-text">
+        <h1>LycéePro</h1>
+        <span>Gestion Scolaire</span>
+      </div>
+    </div>
+
+    <div class="role-switcher">
+      <label>Vue actuelle</label>
+      <select id="roleSelect" onchange="switchRole(this.value)">
+        <option value="directeur">👔 Directeur</option>
+        <option value="secretariat">📋 Secrétariat</option>
+        <option value="professeur">📚 Professeur</option>
+        <option value="etudiant">🎒 Étudiant</option>
+      </select>
+    </div>
+
+    <!-- Directeur nav -->
+    <nav class="nav-section" id="nav-directeur">
+      <p class="nav-section-title">Direction</p>
+      <div class="nav-item active" onclick="showPage('dir-dashboard')">
+        <i class="fas fa-chart-pie"></i> Tableau de bord
+      </div>
+      <div class="nav-item" onclick="showPage('dir-finances')">
+        <i class="fas fa-coins"></i> Finances & Bénéfices
+      </div>
+      <div class="nav-item" onclick="showPage('dir-professeurs')">
+        <i class="fas fa-chalkboard-teacher"></i> Professeurs
+      </div>
+      <div class="nav-item" onclick="showPage('dir-ecolages')">
+        <i class="fas fa-receipt"></i> Écolages du mois
+      </div>
+      <p class="nav-section-title">Général</p>
+      <div class="nav-item" onclick="showPage('actualites')">
+        <i class="fas fa-newspaper"></i> Actualités <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" onclick="showPage('notifications-page')">
+        <i class="fas fa-bell"></i> Notifications <span class="nav-badge">5</span>
+      </div>
+    </nav>
+
+    <!-- Secretariat nav -->
+    <nav class="nav-section" id="nav-secretariat" style="display:none">
+      <p class="nav-section-title">Secrétariat</p>
+      <div class="nav-item active" onclick="showPage('sec-paiements')">
+        <i class="fas fa-plus-circle"></i> Ajouter Paiement
+      </div>
+      <div class="nav-item" onclick="showPage('sec-bilan')">
+        <i class="fas fa-chart-bar"></i> Bilan de paiement
+      </div>
+      <div class="nav-item" onclick="showPage('sec-eleves')">
+        <i class="fas fa-users"></i> Liste des élèves
+      </div>
+      <div class="nav-item" onclick="showPage('sec-profils')">
+        <i class="fas fa-id-card"></i> Profils élèves
+      </div>
+      <p class="nav-section-title">Général</p>
+      <div class="nav-item" onclick="showPage('actualites')">
+        <i class="fas fa-newspaper"></i> Actualités <span class="nav-badge">3</span>
+      </div>
+    </nav>
+
+    <!-- Professeur nav -->
+    <nav class="nav-section" id="nav-professeur" style="display:none">
+      <p class="nav-section-title">Enseignement</p>
+      <div class="nav-item active" onclick="showPage('prof-emploi')">
+        <i class="fas fa-calendar-week"></i> Emploi du temps
+      </div>
+      <div class="nav-item" onclick="showPage('prof-notes')">
+        <i class="fas fa-star"></i> Notes des élèves
+      </div>
+      <div class="nav-item" onclick="showPage('prof-devoirs')">
+        <i class="fas fa-book-open"></i> Devoirs & Leçons
+      </div>
+      <div class="nav-item" onclick="showPage('prof-bulletins')">
+        <i class="fas fa-file-alt"></i> Bulletins
+      </div>
+      <div class="nav-item" onclick="showPage('prof-profil')">
+        <i class="fas fa-user-circle"></i> Mon Profil
+      </div>
+      <p class="nav-section-title">Général</p>
+      <div class="nav-item" onclick="showPage('actualites')">
+        <i class="fas fa-newspaper"></i> Actualités
+      </div>
+    </nav>
+
+    <!-- Etudiant nav -->
+    <nav class="nav-section" id="nav-etudiant" style="display:none">
+      <p class="nav-section-title">Mon Espace</p>
+      <div class="nav-item active" onclick="showPage('etu-emploi')">
+        <i class="fas fa-calendar-week"></i> Emploi du temps
+      </div>
+      <div class="nav-item" onclick="showPage('etu-notes')">
+        <i class="fas fa-star"></i> Mes Notes
+      </div>
+      <div class="nav-item" onclick="showPage('etu-bulletin')">
+        <i class="fas fa-file-alt"></i> Mon Bulletin
+      </div>
+      <div class="nav-item" onclick="showPage('etu-devoirs')">
+        <i class="fas fa-book-open"></i> Devoirs & Leçons
+      </div>
+      <p class="nav-section-title">Général</p>
+      <div class="nav-item" onclick="showPage('actualites')">
+        <i class="fas fa-newspaper"></i> Actualités <span class="nav-badge">2</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-avatar-initials">DR</div>
+        <div class="sidebar-user-info">
+          <strong id="sidebar-user-name">M. Rakoto</strong>
+          <small id="sidebar-user-role">Directeur</small>
+        </div>
+        <i class="fas fa-sign-out-alt" style="color:rgba(255,255,255,.3);font-size:14px;"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Tableau de bord</div>
+    <div class="topbar-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Rechercher…"/>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" style="position:relative;" onclick="toggleNotif()">
+        <i class="fas fa-bell"></i>
+        <span class="notif-dot"></span>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-dropdown-head">
+            <h4>Notifications</h4>
+            <span style="font-size:12px;color:var(--clr-amber);cursor:pointer;">Tout lire</span>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-item-icon" style="background:var(--clr-amber-pale);color:var(--clr-amber);">💰</div>
+            <div class="notif-item-text">
+              <strong>Nouveau paiement reçu</strong>
+              <small>Rakoto Jean — 1ère A — il y a 10 min</small>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-item-icon" style="background:var(--clr-teal-light);color:var(--clr-teal);">📝</div>
+            <div class="notif-item-text">
+              <strong>Notes publiées — Maths</strong>
+              <small>Prof. Rabe — il y a 30 min</small>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-icon" style="background:var(--clr-violet-light);color:var(--clr-violet);">📣</div>
+            <div class="notif-item-text">
+              <strong>Réunion parents-profs</strong>
+              <small>Vendredi 19 avril 2026 — 9h00</small>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-icon" style="background:var(--clr-rose-light);color:var(--clr-rose);">⚠️</div>
+            <div class="notif-item-text">
+              <strong>3 élèves n'ont pas payé</strong>
+              <small>Mois d'Avril — action requise</small>
+            </div>
+          </div>
+        </div>
+      </button>
+      <button class="topbar-btn"><i class="fas fa-cog"></i></button>
+      <div class="topbar-user" onclick="openModal('modal-profil')">
+        <div class="topbar-avatar" id="topbar-avatar-initials">DR</div>
+        <div class="topbar-user-meta">
+          <strong id="topbar-user-name">M. Rakoto</strong>
+          <small id="topbar-user-role">Directeur</small>
+        </div>
+        <i class="fas fa-chevron-down" style="font-size:10px;color:var(--clr-text-muted);"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- ============================================================
+         DIRECTEUR — DASHBOARD
+    ============================================================ -->
+    <section class="page-section active" id="dir-dashboard">
+      <div class="page-header">
+        <div>
+          <h2>Bonjour, M. Rakoto 👋</h2>
+          <p>Vue d'ensemble de l'établissement — Avril 2026</p>
+        </div>
+        <div class="page-header-actions">
+          <select class="form-control" style="width:auto;padding:8px 16px;">
+            <option>Avril 2026</option>
+            <option>Mars 2026</option>
+            <option>Février 2026</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:var(--sp-xl);">
+        <div class="stat-card amber">
+          <div class="stat-icon amber"><i class="fas fa-coins"></i></div>
+          <div class="stat-value">4 200 000</div>
+          <div class="stat-label">Bénéfice mensuel (Ar)</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> +12% vs mois dernier</div>
+        </div>
+        <div class="stat-card rose">
+          <div class="stat-icon rose"><i class="fas fa-wallet"></i></div>
+          <div class="stat-value">2 450 000</div>
+          <div class="stat-label">Dépenses salaires (Ar)</div>
+          <div class="stat-trend down"><i class="fas fa-arrow-down"></i> −2% vs mois dernier</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-icon teal"><i class="fas fa-user-graduate"></i></div>
+          <div class="stat-value">187</div>
+          <div class="stat-label">Élèves ayant payé ce mois</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 92% du total</div>
+        </div>
+        <div class="stat-card violet">
+          <div class="stat-icon violet"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div class="stat-value">24</div>
+          <div class="stat-label">Professeurs actifs</div>
+          <div class="stat-trend up"><i class="fas fa-check"></i> Tous présents</div>
+        </div>
+        <div class="stat-card navy">
+          <div class="stat-icon navy"><i class="fas fa-school"></i></div>
+          <div class="stat-value">203</div>
+          <div class="stat-label">Élèves inscrits total</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> +8 depuis la rentrée</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3>Recettes vs Dépenses (2026)</h3>
+            <button class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> Export</button>
+          </div>
+          <div class="card-body">
+            <div class="chart-placeholder">
+              <div class="chart-bar" style="height:60%"></div>
+              <div class="chart-bar alt" style="height:45%"></div>
+              <div class="chart-bar" style="height:80%"></div>
+              <div class="chart-bar alt" style="height:55%"></div>
+              <div class="chart-bar" style="height:95%"></div>
+              <div class="chart-bar alt" style="height:70%"></div>
+              <div class="chart-bar" style="height:88%"></div>
+              <div class="chart-bar alt" style="height:65%"></div>
+              <div class="chart-bar" style="height:75%"></div>
+              <div class="chart-bar alt" style="height:50%"></div>
+              <div class="chart-bar" style="height:85%"></div>
+              <div class="chart-bar alt" style="height:72%"></div>
+            </div>
+            <div style="display:flex;gap:var(--sp-lg);margin-top:var(--sp-md);font-size:12px;">
+              <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--clr-amber);display:inline-block;"></span>Recettes</span>
+              <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--clr-teal);display:inline-block;"></span>Dépenses</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>Taux de paiement Avril</h3></div>
+          <div class="card-body" style="display:flex;align-items:center;gap:var(--sp-xl);">
+            <div class="donut-chart"></div>
+            <div style="flex:1;">
+              <div class="bilan-item" style="padding-top:0;">
+                <span class="presence-dot present"></span>
+                <span class="bilan-item-label">Payé</span>
+                <div class="bilan-item-bar">
+                  <div class="progress-bar"><div class="progress-fill teal" style="width:68%"></div></div>
+                </div>
+                <span class="bilan-item-val">187</span>
+              </div>
+              <div class="bilan-item">
+                <span class="presence-dot absent"></span>
+                <span class="bilan-item-label">Impayé</span>
+                <div class="bilan-item-bar">
+                  <div class="progress-bar"><div class="progress-fill rose" style="width:17%"></div></div>
+                </div>
+                <span class="bilan-item-val">16</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:var(--sp-xl);">
+        <div class="card-header">
+          <h3>Activité récente</h3>
+          <button class="btn btn-sm btn-secondary">Tout voir</button>
+        </div>
+        <div class="card-body" style="padding:var(--sp-lg);">
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--clr-amber-pale);color:var(--clr-amber);">💰</div>
+              <div class="timeline-content">
+                <strong>Paiement reçu — Rakoto Jean (1ère A)</strong>
+                <small>Aujourd'hui à 09h14 — 80 000 Ar</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--clr-teal-light);color:var(--clr-teal);">📝</div>
+              <div class="timeline-content">
+                <strong>Notes publiées — Mathématiques Terminale C</strong>
+                <small>Hier à 16h30 — Par Prof. Rabe</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--clr-violet-light);color:var(--clr-violet);">👤</div>
+              <div class="timeline-content">
+                <strong>Nouvel élève inscrit — Andria Miora</strong>
+                <small>14 Avril 2026 — Classe Seconde B</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--clr-rose-light);color:var(--clr-rose);">📣</div>
+              <div class="timeline-content">
+                <strong>Actualité publiée — Réunion parents-profs</strong>
+                <small>12 Avril 2026 — Par Secrétariat</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DIRECTEUR — FINANCES
+    ============================================================ -->
+    <section class="page-section" id="dir-finances">
+      <div class="page-header">
+        <div><h2>Finances & Bénéfices</h2><p>Analyse financière mensuelle de l'établissement</p></div>
+        <div class="page-header-actions">
+          <select class="form-control" style="width:auto;padding:8px 16px;">
+            <option>Avril 2026</option><option>Mars 2026</option><option>Février 2026</option>
+          </select>
+          <button class="btn btn-primary"><i class="fas fa-download"></i> Rapport PDF</button>
+        </div>
+      </div>
+
+      <div class="finance-summary" style="margin-bottom:var(--sp-xl);">
+        <div class="finance-block" style="border-top:4px solid var(--clr-teal);">
+          <h4>Total Recettes (Écolages)</h4>
+          <div class="finance-amount positive">6 650 000 <span style="font-size:16px;color:var(--clr-text-muted);">Ar</span></div>
+          <div class="stat-trend up" style="margin-top:var(--sp-sm);"><i class="fas fa-arrow-up"></i> +8% vs Mars</div>
+        </div>
+        <div class="finance-block" style="border-top:4px solid var(--clr-rose);">
+          <h4>Total Dépenses (Salaires)</h4>
+          <div class="finance-amount negative">2 450 000 <span style="font-size:16px;color:var(--clr-text-muted);">Ar</span></div>
+          <div class="stat-trend down" style="margin-top:var(--sp-sm);"><i class="fas fa-arrow-down"></i> −2% vs Mars</div>
+        </div>
+        <div class="finance-block" style="border-top:4px solid var(--clr-amber);grid-column:span 2;">
+          <h4>Bénéfice Net</h4>
+          <div class="finance-amount" style="color:var(--clr-amber);">4 200 000 <span style="font-size:16px;color:var(--clr-text-muted);">Ar</span></div>
+          <div class="stat-trend up" style="margin-top:var(--sp-sm);"><i class="fas fa-arrow-up"></i> +12% vs Mars</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Dépenses salariales par département</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr>
+              <th>Professeur</th><th>Matière</th><th>Heures/sem.</th><th>Salaire mensuel</th><th>Statut</th>
+            </tr></thead>
+            <tbody>
+              <tr><td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));font-size:12px;">RB</div>Prof. Rabe</div></td><td>Mathématiques</td><td>18h</td><td class="grade-excellent">320 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-teal),#4ECDC4);font-size:12px;">RS</div>Prof. Rasoa</div></td><td>Français</td><td>16h</td><td class="grade-excellent">280 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-amber),#F5C76A);font-size:12px;">AN</div>Prof. Andry</div></td><td>Sciences Physiques</td><td>14h</td><td class="grade-excellent">250 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-rose),#FF8FA3);font-size:12px;">HV</div>Prof. Hery</div></td><td>Histoire-Géo</td><td>12h</td><td class="grade-good">220 000 Ar</td><td><span class="badge badge-amber">En attente</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <span>Total: 4 professeurs listés</span>
+          <span style="font-weight:600;color:var(--clr-navy);">Sous-total: 1 070 000 Ar</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DIRECTEUR — PROFESSEURS
+    ============================================================ -->
+    <section class="page-section" id="dir-professeurs">
+      <div class="page-header">
+        <div><h2>Corps Professoral</h2><p>24 professeurs actifs dans l'établissement</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-prof')"><i class="fas fa-plus"></i> Nouveau professeur</button>
+      </div>
+
+      <div class="filter-pills" style="margin-bottom:var(--sp-xl);">
+        <div class="pill active">Tous</div>
+        <div class="pill">Maths</div>
+        <div class="pill">Français</div>
+        <div class="pill">Sciences</div>
+        <div class="pill">Histoire</div>
+        <div class="pill">SVT</div>
+        <div class="pill">Anglais</div>
+      </div>
+
+      <div class="grid-auto">
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));">RB</div>
+          <h4>Prof. Rabe Hery</h4>
+          <div class="matiere">Mathématiques</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Terminale C</span>
+            <span class="badge badge-navy">1ère C</span>
+          </div>
+          <div class="salaire">320 000 <span>Ar/mois</span></div>
+        </div>
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-teal),#4ECDC4);">RS</div>
+          <h4>Prof. Rasoa Nirina</h4>
+          <div class="matiere">Français & Littérature</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Seconde A</span>
+            <span class="badge badge-navy">1ère A</span>
+          </div>
+          <div class="salaire">280 000 <span>Ar/mois</span></div>
+        </div>
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-amber),#F5C76A);">AN</div>
+          <h4>Prof. Andry Noro</h4>
+          <div class="matiere">Sciences Physiques</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Terminale D</span>
+          </div>
+          <div class="salaire">250 000 <span>Ar/mois</span></div>
+        </div>
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-rose),#FF8FA3);">HV</div>
+          <h4>Prof. Hery Vatsy</h4>
+          <div class="matiere">Histoire-Géographie</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Seconde B</span>
+            <span class="badge badge-navy">1ère B</span>
+          </div>
+          <div class="salaire">220 000 <span>Ar/mois</span></div>
+        </div>
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-violet),#A78BFA);">ML</div>
+          <h4>Prof. Mamy Lalao</h4>
+          <div class="matiere">SVT</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Terminale D</span>
+            <span class="badge badge-navy">1ère D</span>
+          </div>
+          <div class="salaire">240 000 <span>Ar/mois</span></div>
+        </div>
+        <div class="prof-card" onclick="showPage('dir-prof-profil')">
+          <div class="prof-card-avatar" style="background:linear-gradient(135deg,#059669,#34D399);">JR</div>
+          <h4>Prof. Jean Ratsima</h4>
+          <div class="matiere">Anglais</div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-sm);">
+            <span class="badge badge-navy">Seconde A</span>
+            <span class="badge badge-navy">Seconde B</span>
+          </div>
+          <div class="salaire">200 000 <span>Ar/mois</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIRECTEUR — PROFIL PROFESSEUR -->
+    <section class="page-section" id="dir-prof-profil">
+      <div class="page-header">
+        <div><h2>Profil du Professeur</h2><p><span style="cursor:pointer;color:var(--clr-amber);" onclick="showPage('dir-professeurs')">← Retour à la liste</span></p></div>
+        <button class="btn btn-secondary"><i class="fas fa-edit"></i> Modifier</button>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:var(--sp-2xl);">
+            <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));width:100px;height:100px;font-size:36px;margin:0 auto var(--sp-lg);">RB</div>
+            <h3 style="font-family:var(--font-display);font-size:22px;">Prof. Rabe Hery</h3>
+            <div style="color:var(--clr-amber);font-weight:600;font-size:14px;margin:var(--sp-sm) 0;">Mathématiques</div>
+            <div style="display:flex;justify-content:center;gap:var(--sp-sm);margin-top:var(--sp-sm);">
+              <span class="badge badge-green">Actif</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Informations</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md);">
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Date d'embauche</div><strong>15 Septembre 2020</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Quartier</div><strong>Analakely</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Contact</div><strong>034 12 345 67</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Email</div><strong>rabe@lycee.mg</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Heures/semaine</div><strong>18 heures</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Salaire</div><strong style="color:var(--clr-teal);">320 000 Ar</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:var(--sp-xl);">
+        <div class="card-header"><h3>Présences du mois</h3></div>
+        <div class="card-body">
+          <div style="display:flex;gap:var(--sp-sm);flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="presence-dot present"></span>Présent — 18 jours</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="presence-dot absent"></span>Absent — 1 jour</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="presence-dot late"></span>Retard — 2 jours</span>
+          </div>
+          <div style="margin-top:var(--sp-lg);">
+            <div class="progress-bar" style="height:12px;">
+              <div class="progress-fill teal" style="width:86%;"></div>
+            </div>
+            <div style="font-size:12px;color:var(--clr-text-muted);margin-top:6px;">Taux de présence: 86%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIRECTEUR — ÉCOLAGES DU MOIS -->
+    <section class="page-section" id="dir-ecolages">
+      <div class="page-header">
+        <div><h2>Écolages du Mois</h2><p>Élèves ayant payé en Avril 2026</p></div>
+        <select class="form-control" style="width:auto;padding:8px 16px;">
+          <option>Avril 2026</option><option>Mars 2026</option>
+        </select>
+      </div>
+      <div class="stats-grid" style="margin-bottom:var(--sp-xl);">
+        <div class="stat-card teal"><div class="stat-icon teal"><i class="fas fa-check-circle"></i></div><div class="stat-value">187</div><div class="stat-label">Ont payé</div></div>
+        <div class="stat-card rose"><div class="stat-icon rose"><i class="fas fa-times-circle"></i></div><div class="stat-value">16</div><div class="stat-label">N'ont pas payé</div></div>
+        <div class="stat-card amber"><div class="stat-icon amber"><i class="fas fa-coins"></i></div><div class="stat-value">14 960 000</div><div class="stat-label">Total collecté (Ar)</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Liste des paiements</h3>
+          <div style="display:flex;gap:var(--sp-sm);">
+            <input type="text" class="form-control" placeholder="Rechercher…" style="width:200px;"/>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Élève</th><th>Classe</th><th>Date de paiement</th><th>Montant</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td>Rakoto Jean</td><td>1ère A</td><td>02/04/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Andria Miora</td><td>Seconde B</td><td>03/04/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Ratsima Lova</td><td>Terminale C</td><td>05/04/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Hery Njaka</td><td>1ère B</td><td>—</td><td>—</td><td><span class="badge badge-red">Impayé</span></td></tr>
+              <tr><td>Lalao Feno</td><td>Seconde A</td><td>08/04/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECRÉTARIAT — AJOUT PAIEMENT
+    ============================================================ -->
+    <section class="page-section" id="sec-paiements">
+      <div class="page-header">
+        <div><h2>Ajouter un Paiement</h2><p>Enregistrer un nouveau paiement d'écolage</p></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Nouveau paiement</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Élève</label>
+              <select class="form-control">
+                <option>— Sélectionner un élève —</option>
+                <option>Rakoto Jean — 1ère A</option>
+                <option>Andria Miora — Seconde B</option>
+                <option>Ratsima Lova — Terminale C</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mois concerné</label>
+                <select class="form-control">
+                  <option>Janvier 2026</option><option>Février 2026</option>
+                  <option>Mars 2026</option><option selected>Avril 2026</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Date d'insertion</label>
+                <input type="date" class="form-control" value="2026-04-16"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Montant (Ar)</label>
+              <input type="number" class="form-control" placeholder="80 000" value="80000"/>
+            </div>
+            <div class="form-group">
+              <label>Année scolaire</label>
+              <select class="form-control">
+                <option selected>2025 — 2026</option>
+                <option>2024 — 2025</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Mode de paiement</label>
+              <select class="form-control">
+                <option>Espèces</option>
+                <option>Virement</option>
+                <option>Mobile Money</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="showToast('✅ Paiement enregistré avec succès !')">
+              <i class="fas fa-save"></i> Enregistrer le paiement
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Statut des paiements — Avril 2026</h3></div>
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:var(--sp-xl);">
+              <div class="donut-chart" style="margin:0 auto;"></div>
+            </div>
+            <div class="bilan-item" style="padding-top:0;">
+              <span class="presence-dot present"></span>
+              <span class="bilan-item-label" style="font-weight:500;">Payés</span>
+              <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill teal" style="width:92%"></div></div></div>
+              <span class="bilan-item-val">187</span>
+            </div>
+            <div class="bilan-item">
+              <span class="presence-dot absent"></span>
+              <span class="bilan-item-label" style="font-weight:500;">Non payés</span>
+              <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill rose" style="width:8%"></div></div></div>
+              <span class="bilan-item-val">16</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECRÉTARIAT — BILAN -->
+    <section class="page-section" id="sec-bilan">
+      <div class="page-header">
+        <div><h2>Bilan de Paiement</h2><p>Taux de recouvrement par mois et par classe</p></div>
+        <select class="form-control" style="width:auto;padding:8px 16px;">
+          <option>Trimestre 1 — 2026</option><option>Trimestre 2 — 2026</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Par classe — Avril 2026</h3></div>
+        <div class="card-body">
+          <div class="bilan-item" style="padding-top:0;">
+            <span class="bilan-item-label">Terminale C</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill teal" style="width:95%"></div></div></div>
+            <span class="bilan-item-val">95%</span>
+          </div>
+          <div class="bilan-item">
+            <span class="bilan-item-label">Terminale D</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill teal" style="width:88%"></div></div></div>
+            <span class="bilan-item-val">88%</span>
+          </div>
+          <div class="bilan-item">
+            <span class="bilan-item-label">1ère A</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill amber" style="width:76%"></div></div></div>
+            <span class="bilan-item-val">76%</span>
+          </div>
+          <div class="bilan-item">
+            <span class="bilan-item-label">1ère B</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill amber" style="width:70%"></div></div></div>
+            <span class="bilan-item-val">70%</span>
+          </div>
+          <div class="bilan-item">
+            <span class="bilan-item-label">Seconde A</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill rose" style="width:58%"></div></div></div>
+            <span class="bilan-item-val">58%</span>
+          </div>
+          <div class="bilan-item">
+            <span class="bilan-item-label">Seconde B</span>
+            <div class="bilan-item-bar"><div class="progress-bar"><div class="progress-fill rose" style="width:51%"></div></div></div>
+            <span class="bilan-item-val">51%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECRÉTARIAT — ÉLÈVES -->
+    <section class="page-section" id="sec-eleves">
+      <div class="page-header">
+        <div><h2>Liste des Élèves</h2><p>203 élèves inscrits pour l'année 2025–2026</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-eleve')"><i class="fas fa-plus"></i> Nouvel élève</button>
+      </div>
+
+      <div style="display:flex;gap:var(--sp-md);margin-bottom:var(--sp-lg);flex-wrap:wrap;align-items:center;">
+        <div class="filter-pills">
+          <div class="pill active">Tous</div>
+          <div class="pill">Seconde</div>
+          <div class="pill">1ère</div>
+          <div class="pill">Terminale</div>
+        </div>
+        <div style="display:flex;gap:var(--sp-sm);margin-left:auto;">
+          <select class="form-control" style="width:auto;padding:8px 12px;font-size:13px;">
+            <option>Toutes les salles</option><option>Seconde A</option><option>Seconde B</option>
+            <option>1ère A</option><option>1ère B</option><option>Terminale C</option>
+          </select>
+          <input type="text" class="form-control" placeholder="Rechercher un élève…" style="width:220px;"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Élève</th><th>Classe</th><th>Janv.</th><th>Fév.</th><th>Mars</th><th>Avr.</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));font-size:12px;">RJ</div>Rakoto Jean</div></td>
+                <td><span class="badge badge-navy">1ère A</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><button class="btn btn-sm btn-secondary" onclick="showPage('sec-profils')">Profil</button></td>
+              </tr>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-teal),#4ECDC4);font-size:12px;">AM</div>Andria Miora</div></td>
+                <td><span class="badge badge-navy">Seconde B</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-red">✗</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><button class="btn btn-sm btn-secondary" onclick="showPage('sec-profils')">Profil</button></td>
+              </tr>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:var(--sp-md);"><div class="avatar-placeholder" style="width:32px;height:32px;background:linear-gradient(135deg,var(--clr-amber),#F5C76A);font-size:12px;">HN</div>Hery Njaka</div></td>
+                <td><span class="badge badge-navy">1ère B</span></td>
+                <td><span class="badge badge-green">✓</span></td>
+                <td><span class="badge badge-red">✗</span></td>
+                <td><span class="badge badge-red">✗</span></td>
+                <td><span class="badge badge-red">✗</span></td>
+                <td><button class="btn btn-sm btn-secondary" onclick="showPage('sec-profils')">Profil</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECRÉTARIAT — PROFIL ÉLÈVE -->
+    <section class="page-section" id="sec-profils">
+      <div class="page-header">
+        <div><h2>Profil de l'Élève</h2><p><span style="cursor:pointer;color:var(--clr-amber);" onclick="showPage('sec-eleves')">← Retour à la liste</span></p></div>
+        <button class="btn btn-secondary"><i class="fas fa-print"></i> Imprimer</button>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:var(--sp-2xl);">
+            <div class="avatar-placeholder" style="width:90px;height:90px;background:linear-gradient(135deg,var(--clr-navy),var(--clr-teal));font-size:32px;margin:0 auto var(--sp-lg);">RJ</div>
+            <h3 style="font-family:var(--font-display);font-size:22px;">Rakoto Jean</h3>
+            <div style="margin-top:var(--sp-sm);"><span class="badge badge-navy">1ère A</span></div>
+            <div style="margin-top:var(--sp-lg);font-family:var(--font-mono);font-size:12px;color:var(--clr-text-muted);">ID-2025-0047</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Informations personnelles</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md);">
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Date de naissance</div><strong>12 Mars 2009</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Quartier</div><strong>Tsaralalàna</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Adresse</div><strong>Lot 24, Tsaralalàna</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Date d'inscription</div><strong>28 Août 2025</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Nom du parent</div><strong>Rakoto Pierre</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Contact parent</div><strong>034 56 789 01</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:var(--sp-xl);">
+        <div class="card-header"><h3>Historique de paiement</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Mois</th><th>Date de paiement</th><th>Montant</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td>Janvier 2026</td><td>02/01/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Février 2026</td><td>04/02/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Mars 2026</td><td>01/03/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+              <tr><td>Avril 2026</td><td>02/04/2026</td><td>80 000 Ar</td><td><span class="badge badge-green">Payé</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PROFESSEUR — EMPLOI DU TEMPS
+    ============================================================ -->
+    <section class="page-section" id="prof-emploi">
+      <div class="page-header">
+        <div><h2>Emploi du Temps</h2><p>Semaine du 14 au 18 Avril 2026 — Prof. Rabe Hery</p></div>
+        <button class="btn btn-secondary"><i class="fas fa-print"></i> Imprimer</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:var(--sp-md);">
+          <div class="schedule-grid">
+            <div class="schedule-header">Heure</div>
+            <div class="schedule-header">Lundi</div>
+            <div class="schedule-header">Mardi</div>
+            <div class="schedule-header">Mercredi</div>
+            <div class="schedule-header">Jeudi</div>
+            <div class="schedule-header">Vendredi</div>
+
+            <div class="schedule-cell schedule-time">07h–08h</div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Terminale C — Salle 8</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>1ère C — Salle 4</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Terminale C — Salle 8</small></div></div>
+
+            <div class="schedule-cell schedule-time">08h–09h</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Terminale C — Salle 8</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>1ère C — Salle 4</small></div></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-cell schedule-time">09h–10h</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>Exercices</span><small>Terminale C — Salle 8</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-cell schedule-time">10h–11h</div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>1ère C — Salle 4</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Terminale C — Salle 8</small></div></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-cell schedule-time">14h–15h</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>Exercices</span><small>1ère C — Salle 4</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Interrogation</span><small>1ère C — Salle 4</small></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESSEUR — NOTES -->
+    <section class="page-section" id="prof-notes">
+      <div class="page-header">
+        <div><h2>Notes des Élèves</h2><p>Saisie et gestion des notes</p></div>
+        <div class="page-header-actions">
+          <select class="form-control" style="width:auto;padding:8px 12px;">
+            <option>Terminale C</option><option>1ère C</option>
+          </select>
+          <select class="form-control" style="width:auto;padding:8px 12px;">
+            <option>Trimestre 2</option><option>Trimestre 1</option>
+          </select>
+          <button class="btn btn-primary" onclick="showToast('📊 Notes enregistrées !')"><i class="fas fa-save"></i> Enregistrer</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Élève</th><th>Devoir 1</th><th>Devoir 2</th><th>Interrogation</th><th>Examen</th><th>Moyenne</th><th>Rang</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Rakoto Jean</td>
+                <td><input type="number" class="form-control" value="16" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="14" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="17" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="15" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td class="grade-excellent">15.5</td>
+                <td><strong style="color:var(--clr-amber);">1er</strong></td>
+              </tr>
+              <tr>
+                <td>Andria Miora</td>
+                <td><input type="number" class="form-control" value="13" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="12" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="14" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="13" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td class="grade-good">13.0</td>
+                <td><strong style="color:var(--clr-text-secondary);">2ème</strong></td>
+              </tr>
+              <tr>
+                <td>Hery Njaka</td>
+                <td><input type="number" class="form-control" value="9" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="8" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="10" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td><input type="number" class="form-control" value="7" min="0" max="20" style="width:70px;padding:6px;text-align:center;"/></td>
+                <td class="grade-fail">8.5</td>
+                <td><strong style="color:var(--clr-text-secondary);">3ème</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESSEUR — DEVOIRS -->
+    <section class="page-section" id="prof-devoirs">
+      <div class="page-header">
+        <div><h2>Devoirs & Leçons</h2><p>Publier des devoirs pour vos classes</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-devoir')"><i class="fas fa-plus"></i> Nouveau devoir</button>
+      </div>
+      <div class="grid-2">
+        <div>
+          <h4 style="font-family:var(--font-display);font-size:16px;margin-bottom:var(--sp-md);">Devoirs publiés</h4>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-md);">
+            <div class="devoir-card">
+              <h4>Exercices — Limites et Continuité</h4>
+              <div class="due">📅 À rendre: 18 Avril 2026</div>
+              <p>Exercices 5 à 12 page 87 du manuel. Correction de l'exercice 4 vue en classe.</p>
+              <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);">
+                <span class="badge badge-navy">Terminale C</span>
+                <span class="badge badge-amber">Mathématiques</span>
+              </div>
+            </div>
+            <div class="devoir-card" style="border-left-color:var(--clr-teal);">
+              <h4>Leçon à apprendre — Dérivées</h4>
+              <div class="due" style="color:var(--clr-teal);">📅 Pour: 21 Avril 2026</div>
+              <p>Relire le chapitre 6 complet. Mémoriser les règles de dérivation.</p>
+              <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);">
+                <span class="badge badge-navy">1ère C</span>
+                <span class="badge badge-amber">Mathématiques</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4 style="font-family:var(--font-display);font-size:16px;margin-bottom:var(--sp-md);">Nouveau devoir / leçon</h4>
+          <div class="card">
+            <div class="card-body">
+              <div class="form-group">
+                <label>Titre</label>
+                <input type="text" class="form-control" placeholder="Ex: Exercices sur les suites"/>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Classe concernée</label>
+                  <select class="form-control">
+                    <option>Terminale C</option><option>1ère C</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Date limite</label>
+                  <input type="date" class="form-control"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control" rows="4" placeholder="Instructions détaillées…" style="resize:vertical;"></textarea>
+              </div>
+              <button class="btn btn-primary" style="width:100%;" onclick="showToast('📚 Devoir publié !')">
+                <i class="fas fa-paper-plane"></i> Publier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESSEUR — BULLETINS -->
+    <section class="page-section" id="prof-bulletins">
+      <div class="page-header">
+        <div><h2>Bulletins — Terminale C</h2><p>Salle dont vous êtes titulaire</p></div>
+        <div class="page-header-actions">
+          <select class="form-control" style="width:auto;padding:8px 12px;"><option>Trimestre 2</option></select>
+          <button class="btn btn-primary" onclick="showToast('📋 Bulletins publiés pour Terminale C !')"><i class="fas fa-share"></i> Publier les bulletins</button>
+        </div>
+      </div>
+      <div class="bulletin">
+        <div class="bulletin-head">
+          <div>
+            <h3>BULLETIN DE NOTES</h3>
+            <p>Lycée Privé — Année 2025–2026 · Trimestre 2 · Terminale C</p>
+            <p style="margin-top:8px;font-size:14px;opacity:.8;">Élève : <strong>Rakoto Jean</strong></p>
+          </div>
+          <div class="bulletin-rank">
+            <span>Rang</span>
+            <strong>1er</strong>
+            <span>/ 32</span>
+          </div>
+        </div>
+        <div class="bulletin-body">
+          <div class="bulletin-row header">
+            <div>Matière</div><div>Note /20</div><div>Coeff.</div><div>Appréciation</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Mathématiques</div>
+            <div class="grade-excellent">15.5</div>
+            <div>5</div>
+            <div style="font-size:12px;color:var(--clr-teal);">Très bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Français</div>
+            <div class="grade-good">13.0</div>
+            <div>4</div>
+            <div style="font-size:12px;color:var(--clr-violet);">Bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Sciences Physiques</div>
+            <div class="grade-good">14.5</div>
+            <div>4</div>
+            <div style="font-size:12px;color:var(--clr-violet);">Bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Histoire-Géographie</div>
+            <div class="grade-average">11.0</div>
+            <div>3</div>
+            <div style="font-size:12px;color:var(--clr-amber);">Assez bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>SVT</div>
+            <div class="grade-excellent">16.0</div>
+            <div>3</div>
+            <div style="font-size:12px;color:var(--clr-teal);">Très bien</div>
+          </div>
+          <div class="bulletin-row">
+            <div>Anglais</div>
+            <div class="grade-average">12.0</div>
+            <div>2</div>
+            <div style="font-size:12px;color:var(--clr-amber);">Assez bien</div>
+          </div>
+        </div>
+        <div class="bulletin-footer">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Moyenne Générale</div>
+            <div class="moy grade-excellent">14.12 / 20</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Appréciation du Directeur</div>
+            <div style="font-size:13px;font-style:italic;margin-top:4px;">"Excellent élève, félicitations !"</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESSEUR — PROFIL -->
+    <section class="page-section" id="prof-profil">
+      <div class="page-header"><div><h2>Mon Profil</h2><p>Informations personnelles et professionnelles</p></div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:var(--sp-2xl);">
+            <div class="prof-card-avatar" style="background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));width:100px;height:100px;font-size:36px;margin:0 auto var(--sp-lg);">RB</div>
+            <h3 style="font-family:var(--font-display);font-size:22px;">Prof. Rabe Hery</h3>
+            <div style="color:var(--clr-amber);font-weight:600;font-size:13px;margin-top:6px;text-transform:uppercase;letter-spacing:.5px;">Mathématiques</div>
+            <div style="margin-top:var(--sp-lg);font-family:var(--font-mono);font-size:22px;color:var(--clr-navy);">320 000 <span style="font-size:13px;font-family:var(--font-body);color:var(--clr-text-muted);">Ar/mois</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Mes informations</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md);">
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Quartier</div><strong>Analakely</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Contact</div><strong>034 12 345 67</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Date d'embauche</div><strong>15 Sept. 2020</strong></div>
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Titulaire de</div><strong>Terminale C</strong></div>
+              <div style="grid-column:span 2;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);margin-bottom:4px;">Matières enseignées</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;"><span class="badge badge-amber">Mathématiques</span><span class="badge badge-violet">Statistiques</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ÉTUDIANT — EMPLOI DU TEMPS
+    ============================================================ -->
+    <section class="page-section" id="etu-emploi">
+      <div class="page-header">
+        <div><h2>Mon Emploi du Temps</h2><p>Semaine du 14 au 18 Avril 2026 — Terminale C</p></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:var(--sp-md);">
+          <div class="schedule-grid">
+            <div class="schedule-header">Heure</div>
+            <div class="schedule-header">Lundi</div>
+            <div class="schedule-header">Mardi</div>
+            <div class="schedule-header">Mercredi</div>
+            <div class="schedule-header">Jeudi</div>
+            <div class="schedule-header">Vendredi</div>
+
+            <div class="schedule-cell schedule-time">07h–08h</div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Prof. Rabe</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class french"><span>Français</span><small>Prof. Rasoa</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Prof. Rabe</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class history"><span>Histoire-Géo</span><small>Prof. Hery</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Prof. Rabe</small></div></div>
+
+            <div class="schedule-cell schedule-time">08h–09h</div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>Sc. Physiques</span><small>Prof. Andry</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Prof. Rabe</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class french"><span>Français</span><small>Prof. Rasoa</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Mathématiques</span><small>Prof. Rabe</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>SVT</span><small>Prof. Mamy</small></div></div>
+
+            <div class="schedule-cell schedule-time">09h–10h</div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class history"><span>Histoire-Géo</span><small>Prof. Hery</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>Sc. Physiques</span><small>Prof. Andry</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class french"><span>Français</span><small>Prof. Rasoa</small></div></div>
+            <div class="schedule-cell"></div>
+
+            <div class="schedule-cell schedule-time">14h–15h</div>
+            <div class="schedule-cell"><div class="schedule-class french"><span>Anglais</span><small>Prof. Jean</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>SVT</span><small>Prof. Mamy</small></div></div>
+            <div class="schedule-cell"></div>
+            <div class="schedule-cell"><div class="schedule-class science"><span>Anglais</span><small>Prof. Jean</small></div></div>
+            <div class="schedule-cell"><div class="schedule-class math"><span>Interrogation</span><small>Prof. Rabe</small></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTUDIANT — NOTES -->
+    <section class="page-section" id="etu-notes">
+      <div class="page-header">
+        <div><h2>Mes Notes</h2><p>Trimestre 2 — 2025/2026</p></div>
+        <select class="form-control" style="width:auto;padding:8px 12px;"><option>Trimestre 2</option><option>Trimestre 1</option></select>
+      </div>
+      <div class="stats-grid" style="margin-bottom:var(--sp-xl);">
+        <div class="stat-card amber"><div class="stat-icon amber"><i class="fas fa-star"></i></div><div class="stat-value">14.12</div><div class="stat-label">Moyenne générale</div></div>
+        <div class="stat-card teal"><div class="stat-icon teal"><i class="fas fa-trophy"></i></div><div class="stat-value">1er</div><div class="stat-label">Rang dans la classe</div></div>
+        <div class="stat-card violet"><div class="stat-icon violet"><i class="fas fa-chart-line"></i></div><div class="stat-value">+1.3</div><div class="stat-label">Progression vs T1</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Détail par matière</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Matière</th><th>Professeur</th><th>Note /20</th><th>Coeff.</th><th>Appréciation</th></tr></thead>
+            <tbody>
+              <tr><td>Mathématiques</td><td>Prof. Rabe</td><td class="grade-excellent">15.5</td><td>5</td><td style="color:var(--clr-teal);font-size:13px;">Très bien ⭐</td></tr>
+              <tr><td>Français</td><td>Prof. Rasoa</td><td class="grade-good">13.0</td><td>4</td><td style="color:var(--clr-violet);font-size:13px;">Bien</td></tr>
+              <tr><td>Sciences Physiques</td><td>Prof. Andry</td><td class="grade-good">14.5</td><td>4</td><td style="color:var(--clr-violet);font-size:13px;">Bien</td></tr>
+              <tr><td>Histoire-Géographie</td><td>Prof. Hery</td><td class="grade-average">11.0</td><td>3</td><td style="color:var(--clr-amber);font-size:13px;">Assez bien</td></tr>
+              <tr><td>SVT</td><td>Prof. Mamy</td><td class="grade-excellent">16.0</td><td>3</td><td style="color:var(--clr-teal);font-size:13px;">Très bien ⭐</td></tr>
+              <tr><td>Anglais</td><td>Prof. Jean</td><td class="grade-average">12.0</td><td>2</td><td style="color:var(--clr-amber);font-size:13px;">Assez bien</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTUDIANT — BULLETIN -->
+    <section class="page-section" id="etu-bulletin">
+      <div class="page-header">
+        <div><h2>Mon Bulletin</h2><p>Trimestre 2 — 2025/2026</p></div>
+        <button class="btn btn-secondary"><i class="fas fa-download"></i> Télécharger PDF</button>
+      </div>
+      <div class="bulletin">
+        <div class="bulletin-head">
+          <div>
+            <h3>BULLETIN DE NOTES</h3>
+            <p>Lycée Privé — Année 2025–2026 · Trimestre 2 · Terminale C</p>
+            <p style="margin-top:8px;font-size:14px;opacity:.8;">Élève : <strong>Rakoto Jean</strong></p>
+          </div>
+          <div class="bulletin-rank">
+            <span>Rang</span><strong>1er</strong><span>/ 32</span>
+          </div>
+        </div>
+        <div class="bulletin-body">
+          <div class="bulletin-row header">
+            <div>Matière</div><div>Note /20</div><div>Coeff.</div><div>Appréciation</div>
+          </div>
+          <div class="bulletin-row"><div>Mathématiques</div><div class="grade-excellent">15.5</div><div>5</div><div style="font-size:12px;color:var(--clr-teal);">Très bien</div></div>
+          <div class="bulletin-row"><div>Français</div><div class="grade-good">13.0</div><div>4</div><div style="font-size:12px;color:var(--clr-violet);">Bien</div></div>
+          <div class="bulletin-row"><div>Sciences Physiques</div><div class="grade-good">14.5</div><div>4</div><div style="font-size:12px;color:var(--clr-violet);">Bien</div></div>
+          <div class="bulletin-row"><div>Histoire-Géographie</div><div class="grade-average">11.0</div><div>3</div><div style="font-size:12px;color:var(--clr-amber);">Assez bien</div></div>
+          <div class="bulletin-row"><div>SVT</div><div class="grade-excellent">16.0</div><div>3</div><div style="font-size:12px;color:var(--clr-teal);">Très bien</div></div>
+          <div class="bulletin-row"><div>Anglais</div><div class="grade-average">12.0</div><div>2</div><div style="font-size:12px;color:var(--clr-amber);">Assez bien</div></div>
+        </div>
+        <div class="bulletin-footer">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Moyenne Générale</div>
+            <div class="moy grade-excellent">14.12 / 20</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--clr-text-muted);">Appréciation</div>
+            <div style="font-size:13px;font-style:italic;margin-top:4px;">"Excellent élève, félicitations !"</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTUDIANT — DEVOIRS -->
+    <section class="page-section" id="etu-devoirs">
+      <div class="page-header">
+        <div><h2>Devoirs & Leçons</h2><p>Travaux publiés par vos professeurs</p></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--sp-md);">
+        <div class="devoir-card">
+          <h4>Exercices — Limites et Continuité</h4>
+          <div class="due">📅 À rendre: 18 Avril 2026</div>
+          <p>Exercices 5 à 12 page 87 du manuel. Correction de l'exercice 4 vue en classe.</p>
+          <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);">
+            <span class="badge badge-amber">Mathématiques</span>
+            <span class="badge badge-red">Dans 2 jours</span>
+          </div>
+        </div>
+        <div class="devoir-card" style="border-left-color:var(--clr-teal);">
+          <h4>Leçon — Génétique et Hérédité</h4>
+          <div class="due" style="color:var(--clr-teal);">📅 Pour: 21 Avril 2026</div>
+          <p>Relire le chapitre 8 de SVT. Mémoriser les lois de Mendel.</p>
+          <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);">
+            <span class="badge badge-violet">SVT</span>
+            <span class="badge badge-green">Dans 5 jours</span>
+          </div>
+        </div>
+        <div class="devoir-card" style="border-left-color:var(--clr-violet);">
+          <h4>Dissertation — La Négritude</h4>
+          <div class="due" style="color:var(--clr-violet);">📅 À rendre: 25 Avril 2026</div>
+          <p>Rédiger une dissertation de 3 pages sur le mouvement de la Négritude. Plan détaillé obligatoire.</p>
+          <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);">
+            <span class="badge badge-navy">Français</span>
+            <span class="badge badge-green">Dans 9 jours</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ACTUALITÉS
+    ============================================================ -->
+    <section class="page-section" id="actualites">
+      <div class="page-header">
+        <div><h2>Actualités</h2><p>Nouvelles et événements de l'établissement</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-news')"><i class="fas fa-plus"></i> Publier une actualité</button>
+      </div>
+
+      <!-- Publication form (for authorized roles) -->
+      <div class="card" style="margin-bottom:var(--sp-xl);border-left:4px solid var(--clr-amber);">
+        <div class="card-body">
+          <div style="display:flex;gap:var(--sp-md);align-items:flex-start;">
+            <div class="avatar-placeholder" style="width:40px;height:40px;background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));font-size:15px;">DR</div>
+            <div style="flex:1;">
+              <textarea class="form-control" rows="3" placeholder="Partagez une actualité avec l'école…" style="resize:none;"></textarea>
+              <div style="margin-top:var(--sp-sm);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--sp-sm);">
+                <div style="display:flex;gap:var(--sp-sm);">
+                  <button class="btn btn-sm btn-secondary"><i class="fas fa-image"></i> Photo</button>
+                  <button class="btn btn-sm btn-secondary" onclick="openModal('modal-sondage')"><i class="fas fa-poll"></i> Sondage</button>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="showToast('📣 Actualité publiée !')"><i class="fas fa-paper-plane"></i> Publier</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="news-card">
+          <div class="news-card-image">📢</div>
+          <div class="news-card-body">
+            <div class="news-meta">
+              <span class="badge badge-navy">Direction</span>
+              <span>12 Avril 2026</span>
+            </div>
+            <h4>Réunion Parents-Professeurs</h4>
+            <p>La réunion parents-professeurs du 2ème trimestre se tiendra vendredi 19 avril à 9h dans la grande salle.</p>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-card-image">🏆</div>
+          <div class="news-card-body">
+            <div class="news-meta">
+              <span class="badge badge-amber">Évènement</span>
+              <span>10 Avril 2026</span>
+            </div>
+            <h4>Concours National de Maths</h4>
+            <p>Félicitations à nos élèves de Terminale C qui ont remporté la 2ème place au concours régional de mathématiques !</p>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-card-image" style="background:linear-gradient(135deg,var(--clr-teal),#4ECDC4);">📝</div>
+          <div class="news-card-body">
+            <div class="news-meta">
+              <span class="badge badge-green">Examens</span>
+              <span>8 Avril 2026</span>
+            </div>
+            <h4>Calendrier des Examens T2</h4>
+            <p>Le calendrier des examens du deuxième trimestre est disponible. Les examens se dérouleront du 5 au 16 mai.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sondage -->
+      <div class="card" style="margin-top:var(--sp-xl);">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:var(--sp-md);">
+            <div class="avatar-placeholder" style="width:36px;height:36px;background:linear-gradient(135deg,var(--clr-teal),#4ECDC4);font-size:14px;">RS</div>
+            <div><strong style="display:block;font-size:14px;">Prof. Rasoa</strong><small style="color:var(--clr-text-muted);">Il y a 2 heures · Sondage</small></div>
+          </div>
+          <i class="fas fa-poll" style="color:var(--clr-violet);font-size:20px;"></i>
+        </div>
+        <div class="card-body">
+          <p style="font-weight:600;margin-bottom:var(--sp-lg);">Quel type d'activité préférez-vous pour la sortie de fin d'année ?</p>
+          <div class="poll-option" onclick="selectPoll(this)">
+            <div class="poll-radio"></div> Visite culturelle (musée, monument)
+          </div>
+          <div class="poll-option selected" onclick="selectPoll(this)">
+            <div class="poll-radio"></div> Excursion à la montagne
+          </div>
+          <div class="poll-option" onclick="selectPoll(this)">
+            <div class="poll-radio"></div> Activités sportives
+          </div>
+          <div class="poll-option" onclick="selectPoll(this)">
+            <div class="poll-radio"></div> Gala et remise de prix
+          </div>
+          <div style="margin-top:var(--sp-md);font-size:12px;color:var(--clr-text-muted);">47 réponses · Expire dans 3 jours</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         NOTIFICATIONS PAGE
+    ============================================================ -->
+    <section class="page-section" id="notifications-page">
+      <div class="page-header">
+        <div><h2>Notifications</h2><p>Tous vos événements et alertes</p></div>
+        <button class="btn btn-secondary"><i class="fas fa-check-double"></i> Tout marquer lu</button>
+      </div>
+      <div class="card">
+        <div class="notif-item unread">
+          <div class="notif-item-icon" style="background:var(--clr-amber-pale);color:var(--clr-amber);">💰</div>
+          <div class="notif-item-text" style="flex:1;">
+            <strong>Nouveau paiement reçu — Rakoto Jean</strong>
+            <small>1ère A — 80 000 Ar — il y a 10 min</small>
+          </div>
+          <span class="badge badge-amber">Nouveau</span>
+        </div>
+        <div class="notif-item unread">
+          <div class="notif-item-icon" style="background:var(--clr-teal-light);color:var(--clr-teal);">📝</div>
+          <div class="notif-item-text" style="flex:1;">
+            <strong>Notes publiées — Mathématiques Terminale C</strong>
+            <small>Par Prof. Rabe — il y a 30 min</small>
+          </div>
+          <span class="badge badge-amber">Nouveau</span>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-icon" style="background:var(--clr-violet-light);color:var(--clr-violet);">📣</div>
+          <div class="notif-item-text" style="flex:1;">
+            <strong>Réunion parents-profs programmée</strong>
+            <small>Vendredi 19 avril 2026 — 9h00</small>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-icon" style="background:var(--clr-rose-light);color:var(--clr-rose);">⚠️</div>
+          <div class="notif-item-text" style="flex:1;">
+            <strong>3 élèves n'ont pas payé l'écolage d'Avril</strong>
+            <small>Action requise — 16 Avril 2026</small>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-icon" style="background:var(--clr-teal-light);color:var(--clr-teal);">🏆</div>
+          <div class="notif-item-text" style="flex:1;">
+            <strong>Bulletin du Trimestre 2 publié</strong>
+            <small>Terminale C — 10 Avril 2026</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     MODALS
+============================================================ -->
+
+<!-- Modal Profil -->
+<div class="modal-backdrop" id="modal-profil">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Mon Compte</h3>
+      <button onclick="closeModal('modal-profil')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;padding-bottom:var(--sp-lg);">
+        <div class="avatar-placeholder" style="width:72px;height:72px;background:linear-gradient(135deg,var(--clr-navy),var(--clr-violet));font-size:28px;margin:0 auto var(--sp-md);">DR</div>
+        <h4 style="font-family:var(--font-display);font-size:20px;">M. Rakoto</h4>
+        <span class="badge badge-amber" style="margin-top:6px;">Directeur</span>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" class="form-control" value="directeur@lycee.mg"/></div>
+      <div class="form-group"><label>Nouveau mot de passe</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-profil')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-profil');showToast('✅ Profil mis à jour !')">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajouter Professeur -->
+<div class="modal-backdrop" id="modal-add-prof">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau Professeur</h3>
+      <button onclick="closeModal('modal-add-prof')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Prénom</label><input type="text" class="form-control" placeholder="Jean"/></div>
+        <div class="form-group"><label>Nom</label><input type="text" class="form-control" placeholder="Rakoto"/></div>
+      </div>
+      <div class="form-group"><label>Matière enseignée</label>
+        <select class="form-control"><option>Mathématiques</option><option>Français</option><option>Sciences Physiques</option><option>Histoire-Géo</option><option>SVT</option><option>Anglais</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Contact</label><input type="tel" class="form-control" placeholder="034 XX XXX XX"/></div>
+        <div class="form-group"><label>Salaire (Ar)</label><input type="number" class="form-control" placeholder="250000"/></div>
+      </div>
+      <div class="form-group"><label>Quartier</label><input type="text" class="form-control" placeholder="Antananarivo"/></div>
+      <div class="form-group"><label>Date d'embauche</label><input type="date" class="form-control"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-prof')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-add-prof');showToast('👨‍🏫 Professeur ajouté !')">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajouter Élève -->
+<div class="modal-backdrop" id="modal-add-eleve">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouvel Élève</h3>
+      <button onclick="closeModal('modal-add-eleve')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Prénom de l'élève</label><input type="text" class="form-control" placeholder="Miora"/></div>
+        <div class="form-group"><label>Nom</label><input type="text" class="form-control" placeholder="Andria"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date de naissance</label><input type="date" class="form-control"/></div>
+        <div class="form-group"><label>Classe</label>
+          <select class="form-control"><option>Seconde A</option><option>Seconde B</option><option>1ère A</option><option>1ère B</option><option>Terminale C</option><option>Terminale D</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Nom du parent/tuteur</label><input type="text" class="form-control" placeholder="Andria Pierre"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Contact parent</label><input type="tel" class="form-control" placeholder="034 XX XXX XX"/></div>
+        <div class="form-group"><label>Quartier</label><input type="text" class="form-control" placeholder="Antananarivo"/></div>
+      </div>
+      <div class="form-group"><label>Adresse</label><input type="text" class="form-control" placeholder="Lot XX, …"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-eleve')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-add-eleve');showToast('🎒 Élève inscrit !')">Inscrire</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sondage -->
+<div class="modal-backdrop" id="modal-sondage">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Créer un Sondage</h3>
+      <button onclick="closeModal('modal-sondage')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Question</label><input type="text" class="form-control" placeholder="Ex: Quelle activité préférez-vous ?"/></div>
+      <div class="form-group"><label>Option 1</label><input type="text" class="form-control" placeholder="Option A"/></div>
+      <div class="form-group"><label>Option 2</label><input type="text" class="form-control" placeholder="Option B"/></div>
+      <div class="form-group"><label>Option 3 (optionnel)</label><input type="text" class="form-control" placeholder="Option C"/></div>
+      <div class="form-group"><label>Expire dans</label>
+        <select class="form-control"><option>1 jour</option><option>3 jours</option><option>7 jours</option><option>14 jours</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-sondage')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-sondage');showToast('📊 Sondage publié !')">Publier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Devoir -->
+<div class="modal-backdrop" id="modal-devoir">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau Devoir</h3>
+      <button onclick="closeModal('modal-devoir')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Titre du devoir</label><input type="text" class="form-control" placeholder="Ex: Exercices sur les intégrales"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Classe</label><select class="form-control"><option>Terminale C</option><option>1ère C</option></select></div>
+        <div class="form-group"><label>Date limite</label><input type="date" class="form-control"/></div>
+      </div>
+      <div class="form-group"><label>Instructions</label><textarea class="form-control" rows="4" style="resize:vertical;" placeholder="Détails du devoir…"></textarea></div>
+      <div class="form-group"><label>Pièce jointe (optionnel)</label><input type="file" class="form-control" accept=".pdf,.doc,.docx"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-devoir')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-devoir');showToast('📚 Devoir publié !')">Publier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Actualité -->
+<div class="modal-backdrop" id="modal-news">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Publier une Actualité</h3>
+      <button onclick="closeModal('modal-news')" style="color:var(--clr-text-muted);font-size:18px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Titre</label><input type="text" class="form-control" placeholder="Titre de l'actualité"/></div>
+      <div class="form-group"><label>Catégorie</label>
+        <select class="form-control"><option>Évènement</option><option>Examens</option><option>Annonce</option><option>Félicitations</option><option>Autre</option></select>
+      </div>
+      <div class="form-group"><label>Contenu</label><textarea class="form-control" rows="5" style="resize:vertical;" placeholder="Rédigez votre actualité…"></textarea></div>
+      <div class="form-group"><label>Image (optionnel)</label><input type="file" class="form-control" accept="image/*"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-news')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-news');showToast('📣 Actualité publiée !')">Publier</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+  /* ============================================================
+     ROLE CONFIGURATIONS
+  ============================================================ */
+  const roles = {
+    directeur: {
+      name: 'M. Rakoto',
+      role: 'Directeur',
+      initials: 'DR',
+      defaultPage: 'dir-dashboard',
+      nav: 'nav-directeur'
+    },
+    secretariat: {
+      name: 'Mme. Rasoa',
+      role: 'Secrétaire',
+      initials: 'RS',
+      defaultPage: 'sec-paiements',
+      nav: 'nav-secretariat'
+    },
+    professeur: {
+      name: 'Prof. Rabe',
+      role: 'Professeur',
+      initials: 'RB',
+      defaultPage: 'prof-emploi',
+      nav: 'nav-professeur'
+    },
+    etudiant: {
+      name: 'Rakoto Jean',
+      role: 'Étudiant',
+      initials: 'RJ',
+      defaultPage: 'etu-emploi',
+      nav: 'nav-etudiant'
+    }
+  };
+
+  const pageTitles = {
+    'dir-dashboard': 'Tableau de bord',
+    'dir-finances': 'Finances & Bénéfices',
+    'dir-professeurs': 'Corps Professoral',
+    'dir-prof-profil': 'Profil Professeur',
+    'dir-ecolages': 'Écolages du Mois',
+    'sec-paiements': 'Ajouter un Paiement',
+    'sec-bilan': 'Bilan de Paiement',
+    'sec-eleves': 'Liste des Élèves',
+    'sec-profils': 'Profil Élève',
+    'prof-emploi': 'Emploi du Temps',
+    'prof-notes': 'Notes des Élèves',
+    'prof-devoirs': 'Devoirs & Leçons',
+    'prof-bulletins': 'Bulletins',
+    'prof-profil': 'Mon Profil',
+    'etu-emploi': 'Mon Emploi du Temps',
+    'etu-notes': 'Mes Notes',
+    'etu-bulletin': 'Mon Bulletin',
+    'etu-devoirs': 'Devoirs & Leçons',
+    'actualites': 'Actualités',
+    'notifications-page': 'Notifications',
+  };
+
+  /* ============================================================
+     SWITCH ROLE
+  ============================================================ */
+  function switchRole(roleKey) {
+    const r = roles[roleKey];
+    if (!r) return;
+
+    // Update user info
+    document.getElementById('sidebar-user-name').textContent = r.name;
+    document.getElementById('sidebar-user-role').textContent = r.role;
+    document.getElementById('sidebar-avatar-initials').textContent = r.initials;
+    document.getElementById('topbar-user-name').textContent = r.name;
+    document.getElementById('topbar-user-role').textContent = r.role;
+    document.getElementById('topbar-avatar-initials').textContent = r.initials;
+
+    // Show/hide navs
+    ['nav-directeur','nav-secretariat','nav-professeur','nav-etudiant'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById(r.nav).style.display = 'block';
+
+    // Show default page
+    showPage(r.defaultPage);
+
+    showToast('🔄 Vue changée : ' + r.role);
+  }
+
+  /* ============================================================
+     SHOW PAGE
+  ============================================================ */
+  function showPage(pageId) {
+    // Hide all sections
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    // Show target
+    const target = document.getElementById(pageId);
+    if (target) {
+      target.classList.add('active');
+      // Update topbar title
+      const title = pageTitles[pageId] || 'LycéePro';
+      document.getElementById('topbar-title').textContent = title;
+    }
+    // Update nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+  }
+
+  /* ============================================================
+     MODALS
+  ============================================================ */
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+  // Close on backdrop click
+  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) backdrop.classList.remove('open');
+    });
+  });
+
+  /* ============================================================
+     NOTIFICATIONS
+  ============================================================ */
+  function toggleNotif() {
+    document.getElementById('notif-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', (e) => {
+    const notifPanel = document.querySelector('.notif-panel');
+    const dropdown = document.getElementById('notif-dropdown');
+    if (!e.target.closest('.topbar-btn') || !dropdown.contains(e.target)) {
+      if (!e.target.closest('.topbar-btn')) {
+        dropdown.classList.remove('open');
+      }
+    }
+  });
+
+  /* ============================================================
+     TOAST
+  ============================================================ */
+  function showToast(message, duration = 3000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(20px)';
+      toast.style.transition = 'all .3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  /* ============================================================
+     POLL SELECTION
+  ============================================================ */
+  function selectPoll(el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.poll-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  /* ============================================================
+     FILTER PILLS (interactive)
+  ============================================================ */
+  document.querySelectorAll('.filter-pills').forEach(group => {
+    group.querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+      });
+    });
+  });
+
+  /* ============================================================
+     TABS
+  ============================================================ */
+  document.querySelectorAll('.tabs').forEach(tabs => {
+    tabs.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  });
+
+  /* ============================================================
+     KEYBOARD: ESC closes modal
+  ============================================================ */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+      document.getElementById('notif-dropdown').classList.remove('open');
+    }
+  });
+
+  /* Init */
+  window.addEventListener('DOMContentLoaded', () => {
+    showPage('dir-dashboard');
+    setTimeout(() => showToast('👋 Bienvenue sur LycéePro !'), 800);
+  });
+</script>
+</body>
+</html>
