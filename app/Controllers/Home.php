@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\SupportsCours as SupportsModel;
+
 class Home extends BaseController
 {
     public function index(): string
@@ -76,7 +78,17 @@ class Home extends BaseController
     }
     public function devoirs_prof(): string
     {
-        return view('professeur/devoir');
+        $supportsModel = new SupportsModel();
+        $supportCours = $supportsModel->getPublishedSupports();
+        $options = $supportsModel->getPublishFormOptions();
+
+        return view('professeur/devoir', [
+            'supportCours' => $supportCours,
+            'classes' => $options['classes'],
+            'typesFichiers' => $options['types_fichiers'],
+            'affectations' => $options['affectations'],
+            'matieres' => $options['matieres'],
+        ]);
     }
 
 // Secteur etudiants

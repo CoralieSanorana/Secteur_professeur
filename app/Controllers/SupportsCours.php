@@ -3,12 +3,112 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\SupportsCours as SupportsModel;
+use CodeIgniter\HTTP\RedirectResponse;
 
 class SupportsCours extends BaseController
 {
-    public function index(){ return $this->response->setJSON((new SupportsModel())->findAll()); }
-    public function show($id){ return $this->response->setJSON((new SupportsModel())->find($id)); }
-    public function create(){ $data=$this->request->getJSON(true); $id=(new SupportsModel())->insert($data); return $this->response->setJSON(['id'=>$id]); }
-    public function update($id){ $data=$this->request->getJSON(true); (new SupportsModel())->update($id,$data); return $this->response->setJSON(['updated'=>true]); }
-    public function delete($id){ (new SupportsModel())->delete($id); return $this->response->setJSON(['deleted'=>true]); }
+    private SupportsModel $model;
+
+    public function __construct()
+    {
+        $this->model = new SupportsModel();
+    }
+
+    public function index()
+    {
+        return $this->response->setJSON($this->model->findAll());
+    }
+
+    public function show($id)
+    {
+        $row = $this->model->find($id);
+        if (!$row) {
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'Support introuvable']);
+        }
+
+        return $this->response->setJSON($row);
+    }
+
+    public function create()
+    {
+        $data = $this->request->getJSON(true) ?? $this->request->getPost();
+        $id = $this->model->insert($data);
+
+        if ($id === false) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'message' => 'Données invalides',
+                'errors' => $this->model->errors(),
+            ]);
+        }
+
+        return $this->response->setStatusCode(201)->setJSON(['id' => $id]);
+    }
+
+    public function update($id)
+    {
+        $data = $this->request->getJSON(true) ?? $this->request->getRawInput();
+        $ok = $this->model->update($id, $data);
+
+        if ($ok === false) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'message' => 'Mise à jour refusée',
+                'errors' => $this->model->errors(),
+            ]);
+        }
+
+        return $this->response->setJSON(['updated' => true]);
+    }
+
+    public function delete($id)
+    {
+        if (!$this->model->find($id)) {
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'Support introuvable']);
+        }
+
+        $this->model->delete($id);
+        return $this->response->setJSON(['deleted' => true]);
+    }
+
+    public function publier(): RedirectResponse|string
+    {
+        $file = $this->request->getFile('fichier');
+        $fichierUrl = null;
+
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $uploadPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'supports_cours';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $newName = $file->getRandomName();
+            $file->move($uploadPath, $newName);
+            $fichierUrl = 'uploads/supports_cours/' . $newName;
+        }
+
+        $dateLimite = $this->request->getPost('date_limite');
+        if (!empty($dateLimite)) {
+            $timestamp = strtotime(str_replace('T', ' ', $dateLimite));
+            $dateLimite = $timestamp !== false ? date('Y-m-d H:i:s', $timestamp) : $dateLimite;
+        }
+
+        $data = [
+            'affectation_id' => (int) $this->request->getPost('affectation_id'),
+            'type_fichier_id' => $this->request->getPost('type_fichier_id') !== '' ? (int) $this->request->getPost('type_fichier_id') : null,
+            'titre' => trim((string) $this->request->getPost('titre')),
+            'description' => trim((string) $this->request->getPost('description')),
+            'fichier_url' => $fichierUrl,
+            'type_contenu' => (string) $this->request->getPost('type_contenu'),
+            'date_limite' => $dateLimite ?: null,
+            'accepte_retard' => $this->request->getPost('accepte_retard') ? true : false,
+            'is_archived' => false,
+            'cree_par' => $this->request->getPost('cree_par') !== '' ? (int) $this->request->getPost('cree_par') : null,
+        ];
+
+        $id = $this->model->insert($data);
+        if ($id === false) {
+            return redirect()->back()->withInput()->with('error', 'Impossible de publier le cours.');
+        }
+
+        return redirect()->back()->with('success', 'Cours publié avec succès.');
+    }
 }

@@ -27,13 +27,13 @@
 
 ## Coralie
 - [] Page: professeur/calendar.php
-  - [] Fonction php: getAllSeancesProf() 
-    - [] recuperer toutes les seances d'un prof dans la table 'seances' a partir de son 'id'.
-  - [] Affichage: afficher sous forme de calendrier son emploi du temps
-    - [] Fonction js: calendar(): afficher dans une calendrier hebdomadaire toutes les seances auxquelles le prof est affecte (avec Matiere, Salle, Classe, heure debut, heure fin)
+  - [ok] SQL: creer view 'v_emploi_du_temps_professeur' pour obtenir emploi du temps d'un prof 
+  - [ok] Fonction php: getEmploiDuTempsByProfesseur() 
+    - [ok] recuperer l'emploi du temps d'un prof dans la table 'seances' a partir de son 'id'.
+  - [ok] Affichage: afficher sous forme de calendrier son emploi du temps
+    - [ok] afficher dans une calendrier hebdomadaire toutes les seances auxquelles le prof est affecte (avec Matiere, Salle, Classe, heure debut, heure fin)
     - [] rendre chaque section de seance clicable pour faire la 'presence'-> redirect->to('professeur/absence.php')
-  - [] Affichage: ajouter bouton 'Export PDF'
-    - [] Fonction php: exportPDF(): exporter sous format PDF l'emploi du temps du prof.
+  - [ok] Affichage: ajouter bouton 'Imprimer'
 
 ## Bryan
 - [] Page: professeur/absence.php
@@ -68,18 +68,18 @@
     - [] return un message (success / error)
 
 ## Coralie
-- [] Page: professeur/devoirs.php
-  - [] SQL: creer les tables pour les devoirs et exercices
-    - [] type_fichier ('PDF', 'DOCX', 'Lien externe', etc.)
-    - [] supports_cours
-  - [] Affichage: 
-    - [] afficher les cours deja publier (exo/lecon)
-    - [] bouton 'Publier cours' -> appel fonction js: formCours()
-  - [] Foction js: formcours()
-    - [] un formulaire pour publier des cours avec les champs: classe, type_ficher, titre, description, type_contenu(lecon, exercice), date_limit, upload fichier(pas obligatoire)
-  - [] Fonction php: saveCours()
-    - [] enregistrer les cours saisi
-    - [] return un message (success / error)
+- [ok] Page: professeur/devoirs.php
+  - [ok] SQL: creer les tables pour les devoirs et exercices
+    - [ok] type_fichier ('PDF', 'DOCX', 'Lien externe', etc.)
+    - [ok] supports_cours
+  - [ok] Affichage: 
+    - [ok] afficher les cours deja publier (exo/lecon)
+    - [ok] bouton 'Publier cours' -> appel fonction js: formCours()
+  - [ok] Foction js: formcours()
+    - [ok] un formulaire pour publier des cours avec les champs: classe, type_ficher, titre, description, type_contenu(lecon, exercice), date_limit, upload fichier(pas obligatoire)
+  - [ok] Fonction php: saveCours()
+    - [ok] enregistrer les cours saisi
+    - [ok] return un message (success / error)
 
 ## Itiela
 - [] Page: professeur/bulletin.php

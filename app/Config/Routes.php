@@ -30,6 +30,9 @@ $routes->group('professeur', function($routes) {
     $routes->get('notes', 'Home::notes_prof');
     $routes->get('profil', 'Home::profil');
     $routes->get('devoirs', 'Home::devoirs_prof');
+    $routes->post('supports-cours/publier', 'SupportsCours::publier');
+
+    $routes->get('emploi-du-temps/(:num)', 'EmploiDuTemps::getEmploiDuTempsByProfesseur/$1');
 });
 
 $routes->group('etudiant', function($routes) {
