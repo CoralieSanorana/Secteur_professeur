@@ -36,15 +36,15 @@
   - [ok] Affichage: ajouter bouton 'Imprimer'
 
 ## Bryan
-- [] Page: professeur/absence.php
-  - [] Fonction php: getAllEtudiantsClasse()
-    - [] recuperer tous les etudiants d'une classe
-  - [] Affichage: 
-    - [] afficher sous forme de tableau la liste des etudiants avec les colonnes: id, matricule, photo, nom+prenom, sex, absence (par defaut 'non'), type, justification
-    - [] bouton 'Valider precence'
-  - [] Fonction php: saveAbsencesClass()
-    - [] enregistrer uniquement les etudiants absent
-    - [] return un message (success / error)
+- [ok] Page: professeur/absence.php
+  - [ok] Fonction php: getAllEtudiantsClasse()
+    - [ok] recuperer tous les etudiants d'une classe
+  - [ok] Affichage: 
+    - [ok] afficher sous forme de tableau la liste des etudiants avec les colonnes: id, matricule, photo, nom+prenom, sex, absence (par defaut 'non'), type, justification
+    - [ok] bouton 'Valider precence'
+  - [ok] Fonction php: saveAbsencesClass()
+    - [ok] enregistrer uniquement les etudiants absent
+    - [ok] return un message (success / error)
 
 ## Coralie
 - [] Page: professeur/notes.php
@@ -98,11 +98,11 @@
     - [] afficher la moyenne de classe
 
 ## Bryan
-- [] Page: professeur/profil.php
-  - [] Fonction php: getInfoProf()
-    - [] recuperer toutes les informations d'un prof
-  - [] Affichage:
-    - [] afficher les informations complet du professeur: 
-      - [] info personnel: id, nom+prenom, photo, adresse, date d'embauche, contact, salaire
-      - [] matieres enseignees
+- [ok] Page: professeur/profil.php
+  - [ok] Fonction php: getInfoProf()
+    - [ok] recuperer toutes les informations d'un prof
+  - [ok] Affichage:
+    - [ok] afficher les informations complet du professeur: 
+      - [ok] info personnel: id, nom+prenom, photo, adresse, date d'embauche, contact, salaire
+      - [ok] matieres enseignees
 
