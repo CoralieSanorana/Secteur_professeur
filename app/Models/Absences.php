@@ -14,15 +14,15 @@ class Absences extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
     
-     // Récupère tous les étudiants d'une classe avec leurs infos
-    
+    /**
+     * Récupère tous les étudiants d'une classe
+     */
     public function getAllEtudiantsClasse($classeId, $anneeScolaireId = null)
     {
         $db = \Config\Database::connect();
         $builder = $db->table('inscriptions i');
         
         if (!$anneeScolaireId) {
-            // Récupérer l'année scolaire active
             $anneeActive = $db->table('annees_scolaires')
                               ->where('est_active', true)
                               ->get()
@@ -49,7 +49,6 @@ class Absences extends Model
         $db->transStart();
         
         foreach ($absencesData as $absence) {
-            // Vérifier si une absence existe déjà pour cette séance et cet étudiant
             $existing = $db->table('absences')
                            ->where('seance_id', $seanceId)
                            ->where('etudiant_id', $absence['etudiant_id'])
@@ -57,7 +56,6 @@ class Absences extends Model
                            ->getRowArray();
             
             if ($existing) {
-                // Mettre à jour l'absence existante
                 $db->table('absences')
                    ->where('id', $existing['id'])
                    ->update([
@@ -67,7 +65,6 @@ class Absences extends Model
                        'updated_at' => date('Y-m-d H:i:s')
                    ]);
             } else {
-                // Créer une nouvelle absence
                 $db->table('absences')->insert([
                     'seance_id' => $seanceId,
                     'etudiant_id' => $absence['etudiant_id'],
