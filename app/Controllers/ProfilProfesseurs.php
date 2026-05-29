@@ -1,52 +1,53 @@
 <?php
+namespace App\Controllers;
 
-namespace App\Models;
+use App\Controllers\BaseController;
+use App\Models\ProfilProfesseurs as ProfilProfesseursModel;
 
-use CodeIgniter\Model;
-
-class ProfilProfesseurs extends Model
+class ProfilProfesseurs extends BaseController
 {
-    protected $table = 'profils_professeurs';
-    protected $primaryKey = 'id';
-    protected $returnType = 'array';
-    protected $allowedFields = ['user_id','matricule','nom','prenom','date_naissance','sexe','photo_url','telephone','adresse','specialite','type_contrat','date_debut_contrat','date_fin_contrat','is_archived','created_at','updated_at','id_contrat','id_matiere'];
+    public function index(){ return $this->response->setJSON((new ProfilProfesseursModel())->findAll()); }
+    public function show($id){ return $this->response->setJSON((new ProfilProfesseursModel())->find($id)); }
+    public function create(){ $data=$this->request->getJSON(true); $id=(new ProfilProfesseursModel())->insert($data); return $this->response->setJSON(['id'=>$id]); }
+    public function update($id){ $data=$this->request->getJSON(true); (new ProfilProfesseursModel())->update($id,$data); return $this->response->setJSON(['updated'=>true]); }
+    public function delete($id){ (new ProfilProfesseursModel())->delete($id); return $this->response->setJSON(['deleted'=>true]); }
     
-    /**
-     * Récupère toutes les informations d'un prof avec son contrat et ses matières
-     */
-    public function getInfoProf($professeurId)
+    // Nouvelle méthode pour afficher le profil
+    public function profil($id = null)
     {
-        $db = \Config\Database::connect();
-        $builder = $db->table('profils_professeurs pp');
+        $professeurId = $id ?? session()->get('professeur_id');
+        $model = new ProfilProfesseursModel();
+        $prof = $model->getInfoProf($professeurId);
         
-        $result = $builder->select('pp.*, 
-                                    ce.salaire_mensuel,
-                                    ce.date_debut as date_embauche,
-                                    ce.date_fin as fin_contrat,
-                                    tce.libelle as type_contrat_libelle,
-                                    u.email')
-                         ->join('contrats_employes ce', 'ce.id = pp.id_contrat', 'left')
-                         ->join('types_contrats_employes tce', 'tce.id = ce.type_contrat_id', 'left')
-                         ->join('users u', 'u.id = pp.user_id', 'left')
-                         ->where('pp.id', $professeurId)
-                         ->get()
-                         ->getRowArray();
-        
-        if ($result) {
-            // Récupérer les matières enseignées
-            $matieres = $db->table('affectations_enseignement ae')
-                          ->select('m.id, m.nom, m.code, ae.heures_hebdo, c.nom as classe_nom')
-                          ->join('matieres m', 'm.id = ae.matiere_id')
-                          ->join('classes c', 'c.id = ae.classe_id')
-                          ->join('annees_scolaires aa', 'aa.id = ae.annee_scolaire_id')
-                          ->where('ae.professeur_id', $professeurId)
-                          ->where('aa.est_active', true)
-                          ->get()
-                          ->getResultArray();
-            
-            $result['matieres_enseignees'] = $matieres;
+        if (!$prof) {
+            return redirect()->back()->with('error', 'Professeur non trouvé');
         }
         
-        return $result;
+        // Calculer l'ancienneté
+        $anciennete = '';
+        if (!empty($prof['date_embauche'])) {
+            $debut = new \DateTime($prof['date_embauche']);
+            $now = new \DateTime();
+            $diff = $debut->diff($now);
+            $anciennete = $diff->y . ' ans';
+        }
+        
+        // Formater le salaire
+        $salaireFormate = !empty($prof['salaire_mensuel']) ? number_format($prof['salaire_mensuel'], 0, ',', ' ') . ' Ar' : 'Non défini';
+        
+        // Préparer les données pour la vue
+        $data = [
+            'prof' => $prof,
+            'anciennete' => $anciennete,
+            'salaireFormate' => $salaireFormate,
+            'pageTitle' => 'Mon Profil',
+            'activePage' => 'prof-profil',
+            'activeRole' => 'professeur',
+            'userName' => ($prof['prenom'] ?? '') . ' ' . ($prof['nom'] ?? ''),
+            'userRole' => 'Professeur',
+            'userInitials' => strtoupper(substr($prof['prenom'] ?? 'P', 0, 1) . substr($prof['nom'] ?? 'R', 0, 1))
+        ];
+        
+        return view('professeur/profil', $data);
     }
 }
