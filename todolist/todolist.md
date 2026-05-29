@@ -47,14 +47,14 @@
     - [] return un message (success / error)
 
 ## Coralie
-- [] Page: professeur/notes.php
-  - [] Fonction php: getAllAssignementsProf()
-    - [] recuprer toutes les assignements du prof (avec classe, matiere)
-  - [] Affichage: 
-    - [] afficher toutes les 'classes & matieres' auxquelles le prof est attribue sur une bare fixe en haut
-    - [] rendre chaque 'classes & matieres' clicable
-      - [] afficher la liste des etudiants de cette classe sous forme de tableau avec les colonnes: id, matricule, nom+penom, les notes precedantes de chaque etudiant (avec nom de colonne = type d'evaluation)
-      - [] bouton 'Saisi de note' -> redirect->to(' professeur/saisir_notes.php')
+- [ok] Page: professeur/notes.php
+  - [ok] Fonction php: getAllAssignementsProf()
+    - [ok] recuprer toutes les assignements du prof (avec classe, matiere)
+  - [ok] Affichage: 
+    - [ok] afficher toutes les 'classes & matieres' auxquelles le prof est attribue sur une bare fixe en haut
+    - [ok] rendre chaque 'classes & matieres' clicable
+      - [ok] afficher la liste des etudiants de cette classe sous forme de tableau avec les colonnes: id, matricule, nom+penom, les notes precedantes de chaque etudiant (avec nom de colonne = type d'evaluation)
+      - [ok] bouton 'Saisi de note' -> redirect->to(' professeur/saisir_notes.php')
 
 ## Itiela
 - [] Page: professeur/saisir_notes.php

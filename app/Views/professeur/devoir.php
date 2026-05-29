@@ -37,6 +37,67 @@
   };
 ?>
 
+<style>
+  .flash-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: var(--sp-md);
+    border: 1px solid transparent;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .flash-message i {
+    margin-top: 2px;
+    font-size: 18px;
+    flex: 0 0 auto;
+  }
+
+  .flash-message-success {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: #065f46;
+    border-color: #a7f3d0;
+  }
+
+  .flash-message-error {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: #991b1b;
+    border-color: #fecaca;
+  }
+
+  .devoir-section-hidden {
+    display: none !important;
+  }
+
+  .devoir-section-visible {
+    display: block !important;
+  }
+
+  #devoirs-grid {
+    display: block;
+    width: 100%;
+  }
+
+  #published-supports-panel,
+  #publish-course-section {
+    width: 100%;
+  }
+
+  #published-supports-panel .devoir-card,
+  #publish-course-section .card,
+  #publish-course-placeholder {
+    width: 100%;
+  }
+
+  #publish-course-panel {
+    width: 100%;
+  }
+</style>
+
 <?= view('inc/header', ['pageTitle' => $pageTitle, 'activePage' => $activePage]) ?>
 
 <section class="page-section active" id="prof-devoirs">
@@ -50,8 +111,22 @@
     </button>
   </div>
 
-  <div class="grid-2">
-    <div>
+  <?php if (!empty($flashSuccess)) : ?>
+    <div class="flash-message flash-message-success" role="status" aria-live="polite">
+      <i class="fas fa-check-circle"></i>
+      <?= esc($flashSuccess) ?>
+    </div>
+  <?php endif; ?>
+
+  <?php if (!empty($flashError)) : ?>
+    <div class="flash-message flash-message-error" role="alert" aria-live="assertive">
+      <i class="fas fa-exclamation-triangle"></i>
+      <?= esc($flashError) ?>
+    </div>
+  <?php endif; ?>
+
+  <div id="devoirs-grid">
+    <div id="published-supports-panel" class="devoir-section-visible">
       <h4 style="font-family:var(--font-display);font-size:16px;margin-bottom:var(--sp-md);">Supports déjà publiés</h4>
 
       <?php if (!empty($supportCours)) : ?>
@@ -108,17 +183,15 @@
       <?php endif; ?>
     </div>
 
-    <div>
+    <div id="publish-course-section" class="devoir-section-hidden">
       <h4 style="font-family:var(--font-display);font-size:16px;margin-bottom:var(--sp-md);">Publier un cours</h4>
       <div class="card" id="publish-course-panel" style="display:<?= $showPublishForm ? 'block' : 'none' ?>;">
         <div class="card-body">
-          <?php if (!empty($flashSuccess)) : ?>
-            <div class="alert alert-success" style="margin-bottom:var(--sp-md);"><?= esc($flashSuccess) ?></div>
-          <?php endif; ?>
-          <?php if (!empty($flashError)) : ?>
-            <div class="alert alert-danger" style="margin-bottom:var(--sp-md);"><?= esc($flashError) ?></div>
-          <?php endif; ?>
-
+          <div style="display:flex;justify-content:flex-end;margin-bottom:var(--sp-md);">
+            <button class="btn btn-secondary" type="button" onclick="showSupportsList()">
+              <i class="fas fa-arrow-left"></i> Retour à la liste
+            </button>
+          </div>
           <form action="<?= esc(base_url('professeur/supports-cours/publier')) ?>" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <div class="form-group">
@@ -201,11 +274,43 @@
   function togglePublishForm() {
     const panel = document.getElementById('publish-course-panel');
     const placeholder = document.getElementById('publish-course-placeholder');
+    const publishedPanel = document.getElementById('published-supports-panel');
+    const publishSection = document.getElementById('publish-course-section');
     if (!panel || !placeholder) return;
 
     const isHidden = panel.style.display === 'none' || panel.style.display === '';
     panel.style.display = isHidden ? 'block' : 'none';
     placeholder.style.display = isHidden ? 'none' : 'block';
+
+    if (publishedPanel) {
+      publishedPanel.classList.toggle('devoir-section-hidden', isHidden);
+      publishedPanel.classList.toggle('devoir-section-visible', !isHidden);
+    }
+
+    if (publishSection) {
+      publishSection.classList.toggle('devoir-section-hidden', !isHidden);
+      publishSection.classList.toggle('devoir-section-visible', isHidden);
+    }
+  }
+
+  function showSupportsList() {
+    const panel = document.getElementById('publish-course-panel');
+    const placeholder = document.getElementById('publish-course-placeholder');
+    const publishedPanel = document.getElementById('published-supports-panel');
+    const publishSection = document.getElementById('publish-course-section');
+
+    if (panel) panel.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+
+    if (publishedPanel) {
+      publishedPanel.classList.remove('devoir-section-hidden');
+      publishedPanel.classList.add('devoir-section-visible');
+    }
+
+    if (publishSection) {
+      publishSection.classList.add('devoir-section-hidden');
+      publishSection.classList.remove('devoir-section-visible');
+    }
   }
 </script>
 

@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Models\Affectations as AffectationsModel;
+use App\Models\Notes as NotesModel;
+use App\Models\Periodes as PeriodesModel;
 use App\Models\SupportsCours as SupportsModel;
 
 class Home extends BaseController
@@ -70,7 +73,41 @@ class Home extends BaseController
     }
     public function notes_prof(): string
     {
-        return view('professeur/note');
+        $affectationsModel = new AffectationsModel();
+        $notesModel = new NotesModel();
+        $periodesModel = new PeriodesModel();
+
+        $selectedPeriodeId = $this->request->getGet('periode_id');
+        $selectedPeriodeId = $selectedPeriodeId !== null && $selectedPeriodeId !== '' ? (int) $selectedPeriodeId : null;
+
+        $professeurId = $this->request->getGet('professeur_id');
+        $professeurId = $professeurId !== null && $professeurId !== '' ? (int) $professeurId : null;
+
+        $affectations = $affectationsModel->getAllAssignementsProf($professeurId);
+        $selectedAffectationId = $this->request->getGet('affectation_id');
+        $selectedAffectationId = $selectedAffectationId !== null && $selectedAffectationId !== '' ? (int) $selectedAffectationId : null;
+
+        if ($selectedAffectationId === null && !empty($affectations)) {
+            $selectedAffectationId = (int) $affectations[0]['id'];
+        }
+
+        $periodes = $periodesModel->orderBy('ordre', 'ASC')->findAll();
+
+        if ($selectedPeriodeId === null && !empty($periodes)) {
+            $selectedPeriodeId = (int) $periodes[0]['id'];
+        }
+
+        $noteData = $selectedAffectationId !== null
+            ? $notesModel->getNotesByAffectation($selectedAffectationId, $selectedPeriodeId)
+            : ['affectation' => null, 'students' => [], 'evaluation_types' => [], 'notes' => []];
+
+        return view('professeur/note', [
+            'affectations' => $affectations,
+            'selectedAffectationId' => $selectedAffectationId,
+            'selectedPeriodeId' => $selectedPeriodeId,
+            'periodes' => $periodes,
+            'noteData' => $noteData,
+        ]);
     }
     public function profil(): string
     {

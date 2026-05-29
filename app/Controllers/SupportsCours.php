@@ -32,6 +32,8 @@ class SupportsCours extends BaseController
     public function create()
     {
         $data = $this->request->getJSON(true) ?? $this->request->getPost();
+        $data['accepte_retard'] = !empty($data['accepte_retard']) ? 'true' : 'false';
+        $data['is_archived'] = !empty($data['is_archived']) ? 'true' : 'false';
         $id = $this->model->insert($data);
 
         if ($id === false) {
@@ -47,6 +49,12 @@ class SupportsCours extends BaseController
     public function update($id)
     {
         $data = $this->request->getJSON(true) ?? $this->request->getRawInput();
+        if (array_key_exists('accepte_retard', $data)) {
+            $data['accepte_retard'] = !empty($data['accepte_retard']) ? 'true' : 'false';
+        }
+        if (array_key_exists('is_archived', $data)) {
+            $data['is_archived'] = !empty($data['is_archived']) ? 'true' : 'false';
+        }
         $ok = $this->model->update($id, $data);
 
         if ($ok === false) {
@@ -99,16 +107,23 @@ class SupportsCours extends BaseController
             'fichier_url' => $fichierUrl,
             'type_contenu' => (string) $this->request->getPost('type_contenu'),
             'date_limite' => $dateLimite ?: null,
-            'accepte_retard' => $this->request->getPost('accepte_retard') ? true : false,
-            'is_archived' => false,
-            'cree_par' => $this->request->getPost('cree_par') !== '' ? (int) $this->request->getPost('cree_par') : null,
+            'accepte_retard' => $this->request->getPost('accepte_retard') ? 'true' : 'false',
+            'is_archived' => 'false',
+            'cree_par' => null,
         ];
 
         $id = $this->model->insert($data);
         if ($id === false) {
-            return redirect()->back()->withInput()->with('error', 'Impossible de publier le cours.');
+            $errors = $this->model->errors();
+            $message = 'Impossible de publier le cours.';
+
+            if (!empty($errors)) {
+                $message .= ' ' . implode(' ', array_values($errors));
+            }
+
+            return redirect()->to(base_url('professeur/devoirs'))->withInput()->with('error', $message);
         }
 
-        return redirect()->back()->with('success', 'Cours publié avec succès.');
+        return redirect()->to(base_url('professeur/devoirs'))->with('success', 'Cours publié avec succès.');
     }
 }
