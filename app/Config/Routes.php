@@ -33,6 +33,18 @@ $routes->group('professeur', function($routes) {
     $routes->post('supports-cours/publier', 'SupportsCours::publier');
 
     $routes->get('emploi-du-temps/(:num)', 'EmploiDuTemps::getEmploiDuTempsByProfesseur/$1');
+
+    /* 
+    // Absences
+    $routes->get('absences/(:num)/(:num)', 'Absences::gestion/$1/$2');
+    $routes->get('absences/(:num)', 'Absences::gestion/$1');
+    $routes->get('absences', 'Absences::gestion');
+    $routes->post('absences/saveAbsencesClass', 'Absences::saveAbsencesClass');
+    $routes->get('absences/getAllEtudiantsClasse', 'Absences::getAllEtudiantsClasse');
+
+   // Profil
+    $routes->get('profil', 'ProfilProfesseurs::profil');
+ */
 });
 
 $routes->group('etudiant', function($routes) {
